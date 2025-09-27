@@ -4,6 +4,14 @@ kind: Namespace
 metadata:
   name: pg-cluster
 ---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: initial-user-secret
+  namespace: pg-cluster
+spec:
+  itemPath: "vaults/Infrastruktur/items/Postgres-Initial-DB"
+---
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster 
 metadata:
