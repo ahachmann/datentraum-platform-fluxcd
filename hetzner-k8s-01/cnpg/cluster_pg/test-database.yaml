@@ -1,0 +1,17 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster 
+metadata:
+  name: cluster-example-initdb
+spec:
+  instances: 3
+
+  bootstrap:
+    initdb:
+      database: initialdb
+      owner: initialUser
+      secret:
+        name: initial-user-secret
+
+  storage:
+    size: 10Gi
