@@ -4,3 +4,5 @@ metadata:
   name: cnpg
 resources:
   - namespace.yaml
+  - operator
+
