@@ -1,9 +1,12 @@
 ---
-namespace: cloudnative-pg 
-helmCharts:
-  - name: cloudnative-pg # the chart name
-    repo: https://cloudnative-pg.github.io/charts # the chart repo url
-    namespace: cloudnative-pg # namespace where all resources created
-    version: 0.20.2 # the chart version
-    releaseName: cloudnative-pg # the name that will be used in all resources
-    valuesFile: values.yaml # the values file where the configuration added
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  -  operator.yaml
+configMapGenerator:
+  - name: cnpg-values
+    namespace: cloudnative-pg
+    files:
+      - values.yaml
+generatorOptions:
+  disableNameSuffixHash: true
