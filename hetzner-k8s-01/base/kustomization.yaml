@@ -4,5 +4,6 @@ metadata:
   name: base
 resources:
   - operator
+  - monitoring
 #  - cluster_pg
 
