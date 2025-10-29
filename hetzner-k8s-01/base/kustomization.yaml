@@ -6,5 +6,6 @@ resources:
   - operator
   - monitoring
   - security
+  - networking/dns-manager
 #  - cluster_pg
 
