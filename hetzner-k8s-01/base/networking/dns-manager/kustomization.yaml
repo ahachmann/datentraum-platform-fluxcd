@@ -4,7 +4,8 @@ metadata:
   name: external-dns-stack
 resources:
   - external-dns.yaml
-  - dns-test.yaml
+  - podinfo-test.yaml
+  - kuard-test.yaml
 configMapGenerator:
   - name: external-dns-values
     namespace: external-dns
