@@ -4,6 +4,7 @@ metadata:
   name: external-dns-stack
 resources:
   - external-dns.yaml
+  - dns-test.yaml
 configMapGenerator:
   - name: external-dns-values
     namespace: external-dns
