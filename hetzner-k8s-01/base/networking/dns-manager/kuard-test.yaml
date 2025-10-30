@@ -20,6 +20,8 @@ spec:
           image: harbor.hachmann.hamburg/kuard/kuard-arm64:blue
           ports:
             - containerPort: 8080
+              name: http
+              protocol: TCP
           readinessProbe:
             httpGet:
               path: /healthy
@@ -40,7 +42,7 @@ spec:
     app: kuard
   ports:
     - name: http
-      port: 80
+      port: 8080
       protocol: TCP
       targetPort: http
 ---
@@ -67,4 +69,4 @@ spec:
               service:
                 name: kuard
                 port:
-                  number: 80
+                  number: 8080
