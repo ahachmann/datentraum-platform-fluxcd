@@ -5,7 +5,7 @@ metadata:
 resources:
   - operator
   - monitoring
-  - security
+#  - security
   - networking/dns-manager
 #  - cluster_pg
 
