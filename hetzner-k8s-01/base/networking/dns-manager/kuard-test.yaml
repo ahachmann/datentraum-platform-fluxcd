@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: kuard
+  namespace: default
   labels:
     app: kuard
 spec:
@@ -16,7 +17,7 @@ spec:
     spec:
       containers:
         - name: kuard
-          image: jmutai/kuard-amd64:latest
+          image: harbor.hachmann.hamburg/kuard/kuard-arm64:blue
           ports:
             - containerPort: 8080
           readinessProbe:
