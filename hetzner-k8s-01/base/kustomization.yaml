@@ -7,5 +7,5 @@ resources:
   - monitoring
   - security
   - networking/dns-manager
-#  - cluster_pg
+  - cluster_pg
 
