@@ -31,9 +31,6 @@ spec:
         name: cnpg-default-monitoring
     disableDefaultQueries: false
     enablePodMonitor: true   # Prometheus Operator auto-discovery aktivieren
-    exporter:
-      enabled: true
-      image: ghcr.io/cloudnative-pg/postgres-exporter:latest
   storage:
     size: 10Gi
 ---
