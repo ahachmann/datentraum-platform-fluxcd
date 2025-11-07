@@ -1,68 +1,68 @@
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: test-nfs-pv
-spec:
-  capacity:
-    storage: 10Gi
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: nfs
-  mountOptions:
-    - hard
-    - nfsvers=4.1
-    - rsize=1048576
-    - wsize=1048576
-    - timeo=600
-    - retrans=2
-    - async              # ← DAS IST DER WICHTIGE TEIL!
-    - noatime
-    - nodiratime
-  nfs:
-    path: /mnt/SpinningData/k8s/manual-hetzner-nfs-pv
-    server: 192.168.2.109
----
-# PersistentVolumeClaim
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: nfs-pvc
-  namespace: default
-spec:
-  accessModes:
-    - ReadWriteMany
-  storageClassName: nfs
-  resources:
-    requests:
-      storage: 10Gi
----
-# Ubuntu Deployment
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: ubuntu-deployment
-  namespace: default
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: ubuntu
-  template:
-    metadata:
-      labels:
-        app: ubuntu
-    spec:
-      containers:
-      - name: ubuntu
-        image: ubuntu:22.04
-        command: ["/bin/bash"]
-        args: ["-c", "apt-get update && apt-get install -y curl vim && sleep infinity"]
-        volumeMounts:
-        - name: nfs-storage
-          mountPath: /mnt/nfs
-      volumes:
-      - name: nfs-storage
-        persistentVolumeClaim:
-          claimName: nfs-pvc
+# ---
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: test-nfs-pv
+# spec:
+#   capacity:
+#     storage: 10Gi
+#   accessModes:
+#     - ReadWriteMany
+#   persistentVolumeReclaimPolicy: Retain
+#   storageClassName: nfs
+#   mountOptions:
+#     - hard
+#     - nfsvers=4.1
+#     - rsize=1048576
+#     - wsize=1048576
+#     - timeo=600
+#     - retrans=2
+#     - async              # ← DAS IST DER WICHTIGE TEIL!
+#     - noatime
+#     - nodiratime
+#   nfs:
+#     path: /mnt/SpinningData/k8s/manual-hetzner-nfs-pv
+#     server: 192.168.2.109
+# ---
+# # PersistentVolumeClaim
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: nfs-pvc
+#   namespace: default
+# spec:
+#   accessModes:
+#     - ReadWriteMany
+#   storageClassName: nfs
+#   resources:
+#     requests:
+#       storage: 10Gi
+# ---
+# # Ubuntu Deployment
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: ubuntu-deployment
+#   namespace: default
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: ubuntu
+#   template:
+#     metadata:
+#       labels:
+#         app: ubuntu
+#     spec:
+#       containers:
+#       - name: ubuntu
+#         image: ubuntu:22.04
+#         command: ["/bin/bash"]
+#         args: ["-c", "apt-get update && apt-get install -y curl vim && sleep infinity"]
+#         volumeMounts:
+#         - name: nfs-storage
+#           mountPath: /mnt/nfs
+#       volumes:
+#       - name: nfs-storage
+#         persistentVolumeClaim:
+#           claimName: nfs-pvc
