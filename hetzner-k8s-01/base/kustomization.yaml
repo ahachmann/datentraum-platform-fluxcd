@@ -3,9 +3,9 @@ kind: Kustomization
 metadata:
   name: base
 resources:
+  - security
   - operator
   - monitoring
-  - security
   - networking/dns-manager
   - storage/manual-pv
   - cluster_pg
