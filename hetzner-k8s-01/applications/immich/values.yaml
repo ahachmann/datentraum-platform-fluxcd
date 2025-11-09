@@ -23,7 +23,7 @@ controllers:
               secretKeyRef:
                 name: immich-user-secret
                 key: password          
-          DB_NAME: immich-db
+          DB_DATABASE_NAME: immich-db
 immich:
   metrics:
     # Enabling this will create the service monitors needed to monitor immich with the prometheus operator
