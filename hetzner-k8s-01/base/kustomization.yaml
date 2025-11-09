@@ -8,5 +8,6 @@ resources:
   - monitoring
   - networking/dns-manager
   - storage/manual-pv
+  - storage/nfs-provisioner
   - cluster_pg
 
