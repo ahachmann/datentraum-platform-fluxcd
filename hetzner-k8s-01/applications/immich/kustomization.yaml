@@ -4,8 +4,10 @@ kind: Kustomization
 metadata:
   namespace: immich
 resources:
-  - storage.yaml
-  - immich.yaml
+  - namespace.yaml
+  - database.yaml
+#  - storage.yaml
+#  - immich.yaml
 configMapGenerator:
   - name: immich-values
     namespace: immich
