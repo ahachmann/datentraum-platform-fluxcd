@@ -5,7 +5,7 @@ metadata:
   name: immich-user-secret
   namespace: immich
 spec:
-  itemPath: "vaults/Infrastruktur/items/Postgres-Initial-DB"
+  itemPath: "vaults/Infrastruktur/items/Immich-DB"
 ---
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
