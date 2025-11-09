@@ -1,0 +1,32 @@
+
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: initial-user-secret
+  namespace: pg-cluster
+spec:
+  itemPath: "vaults/Infrastruktur/items/Postgres-Initial-DB"
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster 
+metadata:
+  name: pg-cluster-01
+  namespace: pg-cluster
+spec:
+  instances: 3
+  enableSuperuserAccess: true
+  # bootstrap:
+  #   initdb:
+  #     database: initialdb
+  #     owner: initialUser
+  #     secret:
+  #       name: initial-user-secret
+  monitoring:
+    customQueriesConfigMap:
+      - key: queries
+        name: cnpg-default-monitoring
+    disableDefaultQueries: false
+    enablePodMonitor: true   # Prometheus Operator auto-discovery aktivieren
+  storage:
+    size: 10Gi

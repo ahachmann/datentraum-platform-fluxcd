@@ -4,7 +4,6 @@ kind: Kustomization
 metadata:
   namespace: immich
 resources:
-  - namespace.yaml
   - database.yaml
   - storage.yaml
   - immich.yaml

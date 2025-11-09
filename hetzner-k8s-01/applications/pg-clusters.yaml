@@ -2,17 +2,17 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: immich
+  name: pg-cluster
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: immich
+  name: pg-cluster
   namespace: flux-system
 spec:
-  targetNamespace: immich
+  targetNamespace: pg-cluster
   interval: 10m0s
-  path: ./hetzner-k8s-01/applications/immich
+  path: ./hetzner-k8s-01/applications/pg-clusters
   prune: true
   sourceRef:
     kind: GitRepository
