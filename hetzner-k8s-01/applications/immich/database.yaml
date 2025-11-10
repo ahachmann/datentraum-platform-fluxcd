@@ -12,14 +12,13 @@ kind: Database
 metadata:
   generation: 1
   name: cnpg-immich-db
+  namespace: pg-cluster
 spec:
   cluster:
     name: pg-cluster-01
   name: immich-db
   owner: immich-user
-status:
-  observedGeneration: 1
-  applied: true
+
 # ---
 # apiVersion: postgresql.cnpg.io/v1
 # kind: Cluster
@@ -29,7 +28,34 @@ status:
 # spec:
 #   instances: 1
 #   storage:
-#     size: 1Gi
+#     size: 10Gi
+#   imageName: ghcr.io/tensorchord/cloudnative-vectorchord:16.9-0.4.3
+#   postgresql:
+#     shared_preload_libraries:
+#       - "vchord.so"
+#   bootstrap:
+#     initdb:
+#       # TODO: Use managed extensions (pg 18)
+#       database: immich-db
+#       owner: immich-user
+#       secret:
+#         name: immich-user-secret
+#       postInitApplicationSQL:
+#         # Commands based on: https://immich.app/docs/administration/postgres-standalone/#without-superuser-permission
+#         - CREATE EXTENSION vchord CASCADE;
+#         - CREATE EXTENSION earthdistance CASCADE;
+#         #   bootstrap:
+
+# ---
+# apiVersion: postgresql.cnpg.io/v1
+# kind: Cluster
+# metadata:
+#   name: immich-database
+#   namespace: immich
+# spec:
+#   instances: 1
+#   storage:
+#     size: 10Gi
 #   imageName: ghcr.io/tensorchord/cloudnative-vectorchord:16.9-0.4.3
 #   postgresql:
 #     shared_preload_libraries:

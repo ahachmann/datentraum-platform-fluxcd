@@ -1,3 +1,54 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: immich-init-sql
+  namespace: pg-cluster
+data:
+  init.sql: |
+    CREATE EXTENSION vchord CASCADE;
+    CREATE EXTENSION earthdistance CASCADE;
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-immich-db
+  namespace: pg-cluster
+spec:
+  template:
+    spec:
+      containers:
+      - name: psql
+        image: postgres:16
+        env:
+        - name: PGHOST
+          value: pg-cluster-01-rw.pg-cluster.svc.cluster.local
+        - name: PGDATABASE
+          value: immich-db
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: pg-cluster-01-superuser
+              key: user
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: pg-cluster-01-superuser
+              key: password
+        command:
+        - bash
+        - -c
+        - |
+          until psql -c '\l' | grep immich-db; do sleep 2; done
+          psql -f /scripts/init.sql
+        volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      volumes:
+      - name: scripts
+        configMap:
+          name: immich-init-sql
+      restartPolicy: OnFailure
 ---  
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository

@@ -10,7 +10,6 @@ metadata:
   name: immich
   namespace: flux-system
 spec:
-  targetNamespace: immich
   interval: 10m0s
   path: ./hetzner-k8s-01/applications/immich
   prune: true
