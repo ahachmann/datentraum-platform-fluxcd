@@ -36,12 +36,6 @@ spec:
   postgresql:
     shared_preload_libraries:
       - "vchord.so"
-  # bootstrap:
-  #   initdb:
-  #     database: initialdb
-  #     owner: initialUser
-  #     secret:
-  #       name: initial-user-secret
   monitoring:
     customQueriesConfigMap:
       - key: queries
