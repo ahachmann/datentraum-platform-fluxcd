@@ -3,6 +3,14 @@
 apiVersion: onepassword.com/v1
 kind: OnePasswordItem
 metadata:
+  name: immich-user-secret
+  namespace: immich
+spec:
+  itemPath: "vaults/Infrastruktur/items/Immich-DB"
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
   name: initial-user-secret
   namespace: pg-cluster
 spec:
@@ -16,6 +24,18 @@ metadata:
 spec:
   instances: 3
   enableSuperuserAccess: true
+  imageName: ghcr.io/tensorchord/cloudnative-vectorchord:16.9-0.4.3
+  managed:
+    roles:
+      - name: immich-user
+        login: true
+        ensure: present
+        createdb: false
+        passwordSecret:
+          name: immich-user-secret
+  postgresql:
+    shared_preload_libraries:
+      - "vchord.so"
   # bootstrap:
   #   initdb:
   #     database: initialdb
