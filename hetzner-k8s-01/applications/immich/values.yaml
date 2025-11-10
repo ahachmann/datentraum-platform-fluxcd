@@ -80,17 +80,21 @@ server:
             pullPolicy: IfNotPresent
   ingress:
     main:
-      enabled: false
+      enabled: true
       annotations:
         # proxy-body-size is set to 0 to remove the body limit on file uploads
+        cert-manager.io/cluster-issuer: letsencrypt-prod
         nginx.ingress.kubernetes.io/proxy-body-size: "0"
       hosts:
-        - host: immich.local
+        - host: immich.hachmann.hamburg
           paths:
             - path: "/"
               service:
                 identifier: main
-      tls: []
+      tls: 
+        - hosts:
+            - immich.hachmann.hamburg
+          secretName: immich-general-tls
 
 machine-learning:
   enabled: true

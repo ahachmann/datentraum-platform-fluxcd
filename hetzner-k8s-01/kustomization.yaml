@@ -4,4 +4,4 @@ metadata:
   name: datentraum-base
 resources:
   - base
-#  - applications
+  - applications
