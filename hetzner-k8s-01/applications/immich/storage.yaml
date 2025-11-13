@@ -60,7 +60,7 @@ spec:
     - noatime
     - nodiratime
   nfs:
-    path: /mnt/SpinningData/NatiaBilder/2020
+    path: /mnt/SpinningData/NatiaBilder/
     server: 192.168.2.109
 ---
 # PersistentVolumeClaim
