@@ -71,6 +71,12 @@ valkey:
 
 server:
   enabled: true
+  persistence:
+    external-media:
+      enabled: true
+      type: pvc
+      existingClaim: immich-external-media-nfs-pvc
+      mountPath: /data/external-media
   controllers:
     main:
       containers:
