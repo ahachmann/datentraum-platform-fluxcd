@@ -80,23 +80,20 @@ spec:
     - kind: ConfigMap
       name: immich-values
   postRenderers:
-  - kustomize:
-      patchesStrategicMerge:
-        - |-
-          apiVersion: apps/v1
-          kind: Deployment
-          metadata:
-            name: immich-server
-            namespace: immich
-          spec:
-            template:
-              spec:
-                volumes:
-                  - name: truenas-media
-                    persistentVolumeClaim:
-                      claimName: immich-external-media-nfs-pvc
-                containers:
-                  - name: main
-                    volumeMounts:
-                      - name: truenas-media
-                        mountPath: /data/external-media
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: immich-server
+            patch: |
+              - op: add
+                path: /spec/template/spec/volumes/-
+                value:
+                  name: truenas-media
+                  persistentVolumeClaim:
+                    claimName: immich-external-media-nfs-pvc
+              - op: add
+                path: /spec/template/spec/containers/0/volumeMounts/-
+                value:
+                  name: truenas-media
+                  mountPath: /mnt/truenas-media
