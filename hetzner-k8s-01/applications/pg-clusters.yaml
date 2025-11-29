@@ -12,8 +12,25 @@ metadata:
 spec:
   targetNamespace: pg-cluster
   interval: 10m0s
-  path: ./hetzner-k8s-01/applications/pg-clusters
+  path: ./hetzner-k8s-01/base/pg-clusters
   prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
+  patches:
+    - patch: |-
+        - op: replace
+          path: /spec/managed
+          value:
+            roles:
+              - name: immich-user
+                login: true
+                ensure: present
+                createdb: false
+                passwordSecret:
+                  name: immich-user-secret
+      target:
+        kind: Cluster
+        name: pg-cluster-01
+        namespace: pg-cluster
+  
