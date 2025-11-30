@@ -1,0 +1,53 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  generation: 1
+  name: cnpg-sn-db
+  namespace: pg-cluster
+spec:
+  cluster:
+    name: pg-cluster-01
+  name: schwarze-null-db
+  owner: schwarze-null-user
+# ---
+# apiVersion: batch/v1
+# kind: Job
+# metadata:
+#   name: init-immich-db
+#   namespace: pg-cluster
+# spec:
+#   template:
+#     spec:
+#       containers:
+#       - name: psql
+#         image: postgres:16
+#         env:
+#         - name: PGHOST
+#           value: pg-cluster-01-rw.pg-cluster.svc.cluster.local
+#         - name: PGDATABASE
+#           value: immich-db
+#         - name: PGUSER
+#           valueFrom:
+#             secretKeyRef:
+#               name: pg-cluster-01-superuser
+#               key: user
+#         - name: PGPASSWORD
+#           valueFrom:
+#             secretKeyRef:
+#               name: pg-cluster-01-superuser
+#               key: password
+#         command:
+#         - bash
+#         - -c
+#         - |
+#           until psql -c '\l' | grep immich-db; do sleep 2; done
+#           psql -f /scripts/init.sql
+#         volumeMounts:
+#         - name: scripts
+#           mountPath: /scripts
+#       volumes:
+#       - name: scripts
+#         configMap:
+#           name: immich-init-sql
+#       restartPolicy: OnFailure  

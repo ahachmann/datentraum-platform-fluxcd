@@ -3,4 +3,5 @@ kind: Kustomization
 resources:
   - db-secrets.yaml
   - pg-clusters.yaml
+  - schwarze-null
 
