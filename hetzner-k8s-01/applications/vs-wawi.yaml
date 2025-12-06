@@ -4,6 +4,18 @@ kind: Namespace
 metadata:
   name: vanille-shop-production
 ---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  generation: 1
+  name: cnpg-vs-db
+  namespace: pg-cluster
+spec:
+  cluster:
+    name: pg-cluster-01
+  name: vs-db
+  owner: vs-user
+---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -12,31 +24,9 @@ metadata:
 spec:
   targetNamespace: vanille-shop-production
   interval: 10m0s
-  path: ./hetzner-k8s-vs-01/applications/mosquitto
+  path: ./hetzner-k8s-vs-01/applications
   prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
-  # patches:
-  #   - patch: |-
-  #       - op: replace
-  #         path: /spec/managed
-  #         value:
-  #           roles:
-  #             - name: immich-user
-  #               login: true
-  #               ensure: present
-  #               createdb: false
-  #               passwordSecret:
-  #                 name: immich-user-secret
-  #             - name: schwarze-null-user
-  #               login: true
-  #               ensure: present
-  #               createdb: false
-  #               passwordSecret:
-  #                 name: schwarze-null-user-secret
-  #     target:
-  #       kind: Cluster
-  #       name: pg-cluster-01
-  #       namespace: pg-cluster
-  
+---

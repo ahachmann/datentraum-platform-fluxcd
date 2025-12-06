@@ -35,6 +35,12 @@ spec:
                 createdb: false
                 passwordSecret:
                   name: schwarze-null-user-secret
+              - name: vs-user
+                login: true
+                ensure: present
+                createdb: false
+                passwordSecret:
+                  name: vs-user-secret
       target:
         kind: Cluster
         name: pg-cluster-01
