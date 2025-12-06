@@ -1,0 +1,42 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vanille-shop-production
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: vs-wawi
+  namespace: flux-system
+spec:
+  targetNamespace: vanille-shop-production
+  interval: 10m0s
+  path: ./hetzner-k8s-vs-01/applications/mosquitto
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  # patches:
+  #   - patch: |-
+  #       - op: replace
+  #         path: /spec/managed
+  #         value:
+  #           roles:
+  #             - name: immich-user
+  #               login: true
+  #               ensure: present
+  #               createdb: false
+  #               passwordSecret:
+  #                 name: immich-user-secret
+  #             - name: schwarze-null-user
+  #               login: true
+  #               ensure: present
+  #               createdb: false
+  #               passwordSecret:
+  #                 name: schwarze-null-user-secret
+  #     target:
+  #       kind: Cluster
+  #       name: pg-cluster-01
+  #       namespace: pg-cluster
+  

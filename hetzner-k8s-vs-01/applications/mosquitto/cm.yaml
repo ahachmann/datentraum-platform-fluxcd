@@ -1,0 +1,22 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/instance: mqtt
+    app.kubernetes.io/name: mosquitto
+    app.kubernetes.io/version: 2.0.14
+  name: mqtt-mosquitto-config
+data:
+  mosquitto.conf: "per_listener_settings false\nlistener 1883\nallow_anonymous false\npassword_file
+    /mosquitto/config/password_file.txt    \n"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: mosquitto
+  name: mosquitto-password
+data:
+  password_file.txt: |
+    ahachmann:$7$101$EwPklzws0A+xps7w$z9EnZjYfV4SOIFRV8FF67h/5vU5KvdbWc8Jqg+VzfxlQm1dbIdS4Gk4Y+Azsh40FGQdEIyu+29jPvhtGrCv8Yg==
