@@ -19,8 +19,8 @@ metadata:
   namespace: pg-cluster
 spec:
   configuration:
-    destinationPath: s3://backups/
-    endpointURL: http://minio:9000
+    destinationPath: s3://pg-cluster/
+    endpointURL: http://192.168.2.109:9000
     s3Credentials:
       accessKeyId:
         name: minio-truenas-s3-key-secret
