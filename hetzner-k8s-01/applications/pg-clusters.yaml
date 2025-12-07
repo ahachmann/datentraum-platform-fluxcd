@@ -4,6 +4,33 @@ kind: Namespace
 metadata:
   name: pg-cluster
 ---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: minio-truenas-s3-key-secret
+  namespace: pg-cluster
+spec:
+  itemPath: "vaults/Infrastruktur/items/Minio-Truenas-DB-Key"
+---
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: minio-store
+  namespace: pg-cluster
+spec:
+  configuration:
+    destinationPath: s3://backups/
+    endpointURL: http://minio:9000
+    s3Credentials:
+      accessKeyId:
+        name: minio-truenas-s3-key-secret
+        key: AccessKey
+      secretAccessKey:
+        name: minio-truenas-s3-key-secret
+        key: SecretKey
+    wal:
+      compression: gzip
+---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
