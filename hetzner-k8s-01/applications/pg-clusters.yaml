@@ -68,6 +68,13 @@ spec:
                 createdb: false
                 passwordSecret:
                   name: vs-user-secret
+        - op: replace
+          path: /spec/plugins
+          value:
+            - name: barman-cloud.cloudnative-pg.io
+              isWALArchiver: true
+              parameters:
+                barmanObjectName: minio-store
       target:
         kind: Cluster
         name: pg-cluster-01
