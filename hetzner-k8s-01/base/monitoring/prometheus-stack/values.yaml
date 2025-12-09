@@ -128,7 +128,7 @@ grafana:
   # To make Grafana persistent (Using Statefulset)
   #
   persistence:
-    enabled: true
+    enabled: false
     type: sts
     storageClassName: "nfs-client-retain-archive"
     accessModes:
