@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vanille-shop-flux
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vanille-shop-test
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: vanille-shop-test
+  namespace: vanille-shop-flux
+spec:
+  interval: 10m0s
+  targetNamespace: vanille-shop-test
+  path: ./environments/vanille-shop-test
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
