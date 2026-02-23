@@ -8,7 +8,7 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: vanille-shop-test
-  namespace: vanille-shop-flux
+  namespace: ${FLUX_NAMESPACE}
 spec:
   interval: 10m0s
   targetNamespace: vanille-shop-test
@@ -17,3 +17,6 @@ spec:
   sourceRef:
     kind: GitRepository
     name: datentraum
+  postBuild:
+      substitute:
+        FLUX_NAMESPACE: vanille-shop-flux    
