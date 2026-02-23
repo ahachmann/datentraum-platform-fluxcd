@@ -1,0 +1,97 @@
+apiVersion: v1
+items:
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{"cert-manager.io/cluster-issuer":"letsencrypt-prod","kubernetes.io/ingress.class":"nginx","nginx.ingress.kubernetes.io/affinity":"cookie","nginx.ingress.kubernetes.io/affinity-mode":"persistent","nginx.ingress.kubernetes.io/auth-signin":"https://$host/oauth2/start?rd=$escaped_request_uri","nginx.ingress.kubernetes.io/auth-url":"https://$host/oauth2/auth","nginx.ingress.kubernetes.io/cors-allow-headers":"DNT,X-CustomHeader,X-LANG,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,X-Api-Key,X-Device-Id,Access-Control-Allow-Origin","nginx.ingress.kubernetes.io/cors-allow-methods":"PUT, GET, POST, OPTIONS, DELETE","nginx.ingress.kubernetes.io/cors-allow-origin":"*","nginx.ingress.kubernetes.io/enable-cors":"true","nginx.ingress.kubernetes.io/proxy-body-size":"10G","nginx.ingress.kubernetes.io/proxy-buffer-size":"128k","nginx.ingress.kubernetes.io/session-cookie-hash":"sha1","nginx.ingress.kubernetes.io/session-cookie-name":"nginx-session","nginx.ingress.kubernetes.io/use-regex":"true","nnginx.org/websocket-services":"wawi-ws"},"name":"wawi","namespace":"vanille-shop-production"},"spec":{"rules":[{"host":"wawi.vanille-shop.de","http":{"paths":[{"backend":{"service":{"name":"wawi","port":{"number":9080}}},"path":"/.*","pathType":"Prefix"}]}}],"tls":[{"hosts":["wawi.vanille-shop.de"],"secretName":"wawi-vanilleshop-tls"}]}}
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/affinity: cookie
+      nginx.ingress.kubernetes.io/affinity-mode: persistent
+      nginx.ingress.kubernetes.io/auth-signin: https://$host/oauth2/start?rd=$escaped_request_uri
+      nginx.ingress.kubernetes.io/auth-url: https://$host/oauth2/auth
+      nginx.ingress.kubernetes.io/cors-allow-headers: DNT,X-CustomHeader,X-LANG,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,X-Api-Key,X-Device-Id,Access-Control-Allow-Origin
+      nginx.ingress.kubernetes.io/cors-allow-methods: PUT, GET, POST, OPTIONS, DELETE
+      nginx.ingress.kubernetes.io/cors-allow-origin: '*'
+      nginx.ingress.kubernetes.io/enable-cors: "true"
+      nginx.ingress.kubernetes.io/proxy-body-size: 10G
+      nginx.ingress.kubernetes.io/proxy-buffer-size: 128k
+      nginx.ingress.kubernetes.io/session-cookie-hash: sha1
+      nginx.ingress.kubernetes.io/session-cookie-name: nginx-session
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nnginx.org/websocket-services: wawi-ws
+    creationTimestamp: "2024-09-08T19:55:22Z"
+    generation: 1
+    name: wawi
+    namespace: vanille-shop-production
+    resourceVersion: "4008852"
+    uid: b8747044-9bb0-4e7c-bc94-af426e4645bc
+  spec:
+    rules:
+    - host: wawi.vanille-shop.de
+      http:
+        paths:
+        - backend:
+            service:
+              name: wawi
+              port:
+                number: 9080
+          path: /.*
+          pathType: Prefix
+    tls:
+    - hosts:
+      - wawi.vanille-shop.de
+      secretName: wawi-vanilleshop-tls
+  status:
+    loadBalancer:
+      ingress:
+      - ip: 67.207.73.137
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{"kubernetes.io/ingress.class":"nginx","nginx.ingress.kubernetes.io/affinity":"cookie","nginx.ingress.kubernetes.io/affinity-mode":"persistent","nginx.ingress.kubernetes.io/cors-allow-headers":"DNT,X-CustomHeader,X-LANG,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,X-Api-Key,X-Device-Id,Access-Control-Allow-Origin","nginx.ingress.kubernetes.io/cors-allow-methods":"PUT, GET, POST, OPTIONS, DELETE","nginx.ingress.kubernetes.io/cors-allow-origin":"*","nginx.ingress.kubernetes.io/enable-cors":"true","nginx.ingress.kubernetes.io/proxy-body-size":"10G","nginx.ingress.kubernetes.io/proxy-buffer-size":"128k","nginx.ingress.kubernetes.io/session-cookie-hash":"sha1","nginx.ingress.kubernetes.io/session-cookie-name":"sample-cookie","nginx.org/websocket-services":"oauth2-proxy"},"name":"wawi-oauth","namespace":"vanille-shop-production"},"spec":{"rules":[{"host":"wawi.vanille-shop.de","http":{"paths":[{"backend":{"service":{"name":"oauth2-proxy","port":{"number":4180}}},"path":"/oauth2","pathType":"Prefix"}]}}],"tls":[{"hosts":["wawi.vanille-shop.de"],"secretName":"wawi-vanilleshop-tls"}]}}
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/affinity: cookie
+      nginx.ingress.kubernetes.io/affinity-mode: persistent
+      nginx.ingress.kubernetes.io/cors-allow-headers: DNT,X-CustomHeader,X-LANG,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,X-Api-Key,X-Device-Id,Access-Control-Allow-Origin
+      nginx.ingress.kubernetes.io/cors-allow-methods: PUT, GET, POST, OPTIONS, DELETE
+      nginx.ingress.kubernetes.io/cors-allow-origin: '*'
+      nginx.ingress.kubernetes.io/enable-cors: "true"
+      nginx.ingress.kubernetes.io/proxy-body-size: 10G
+      nginx.ingress.kubernetes.io/proxy-buffer-size: 128k
+      nginx.ingress.kubernetes.io/session-cookie-hash: sha1
+      nginx.ingress.kubernetes.io/session-cookie-name: sample-cookie
+      nginx.org/websocket-services: oauth2-proxy
+    creationTimestamp: "2024-09-08T19:58:38Z"
+    generation: 1
+    name: wawi-oauth
+    namespace: vanille-shop-production
+    resourceVersion: "4009626"
+    uid: e03bde8e-7b85-4634-aed1-66f30b62dc60
+  spec:
+    rules:
+    - host: wawi.vanille-shop.de
+      http:
+        paths:
+        - backend:
+            service:
+              name: oauth2-proxy
+              port:
+                number: 4180
+          path: /oauth2
+          pathType: Prefix
+    tls:
+    - hosts:
+      - wawi.vanille-shop.de
+      secretName: wawi-vanilleshop-tls
+  status:
+    loadBalancer:
+      ingress:
+      - ip: 67.207.73.137
+kind: List
+metadata:
+  resourceVersion: ""

@@ -1,0 +1,43 @@
+opencost:
+  nodeNameMapping:
+    "10.1.0.103": "k3s-agent-small-jxa"
+    "10.1.0.101": "k3s-agent-small-nhj"
+    "10.1.0.104": "k3s-agent-small-nll"
+    "10.1.0.102": "k3s-agent-small-qmf"
+    "10.255.0.101": "k3s-control-plane-fsn1-meq"
+
+  loadBalancerCostEnabled: false
+  customPricing:
+    enabled: true
+    provider: "custom"
+    costModel:
+      description: "Hetzner on-prem pricing"
+      # Calculated rates for €3.92/month node (2 vCPUs, 4GB RAM)
+      # Using 60/40 split between CPU and RAM
+      CPU: "0.00161"              # €0.00161 per CPU hour
+      spotCPU: "0.00161"          # Same as CPU (no spot instances)
+      RAM: "0.00054"              # €0.00054 per GB RAM hour
+      spotRAM: "0.00054"          # Same as RAM (no spot instances)
+      GPU: "0"                    # No GPUs
+      storage: "0.00006849315068"                # UPDATE THIS with your PVC cost: (cost_per_GB_per_month / 730)
+      zoneNetworkEgress: "0"      # Set to 0 if not tracking network costs
+      regionNetworkEgress: "0"
+      internetNetworkEgress: "0"
+
+  # Prometheus configuration
+  prometheus:
+    internal:
+      enabled: false
+    amp: 
+      enabled: false
+    external:
+      enabled: true
+      url: "http://kube-prometheus-stack-prometheus.monitoring:9090"
+
+  # UI configuration
+  ui:
+    enabled: true
+
+  # Service configuration
+  service:
+    type: Nodeport

@@ -1,0 +1,48 @@
+loki:
+  schemaConfig:
+    configs:
+      - from: "2024-04-01"
+        store: tsdb
+        object_store: s3
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+  ingester:
+    chunk_encoding: snappy
+  querier:
+    max_concurrent: 4
+  pattern_ingester:
+    enabled: true
+  limits_config:
+    allow_structured_metadata: true
+    volume_enabled: true
+  storage:
+    type: s3
+    bucketNames:
+      chunks: chunks
+      ruler: ruler
+      admin: admin
+    s3:
+      endpoint: loki-minio.monitoring.svc.cluster.local:9000
+      secretAccessKey: supersecret
+      accessKeyId: loki
+      s3ForcePathStyle: true
+      insecure: true
+
+deploymentMode: SimpleScalable
+
+backend:
+  replicas: 2
+read:
+  replicas: 2
+write:
+  replicas: 3
+
+# Enable minio for storage
+minio:
+  enabled: true
+
+gateway:
+  service:
+    type: NodePort

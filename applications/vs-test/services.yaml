@@ -1,0 +1,66 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"creationTimestamp":"2022-10-08T11:11:55Z","labels":{"k8s-app":"oauth2-proxy"},"name":"oauth2-proxy","namespace":"vanille-shop-production"},"spec":{"ports":[{"name":"http","port":4180,"protocol":"TCP","targetPort":4180}],"selector":{"k8s-app":"oauth2-proxy"},"sessionAffinity":"None","type":"ClusterIP"}}
+    creationTimestamp: "2024-09-08T18:44:01Z"
+    labels:
+      k8s-app: oauth2-proxy
+    name: oauth2-proxy
+    namespace: vanille-shop-production
+    resourceVersion: "3992550"
+    uid: e6f224b8-5701-452d-b06e-2d4bb58e8c44
+  spec:
+    clusterIP: 10.245.182.108
+    clusterIPs:
+    - 10.245.182.108
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http
+      port: 4180
+      protocol: TCP
+      targetPort: 4180
+    selector:
+      k8s-app: oauth2-proxy
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"name":"wawi","namespace":"vanille-shop-production"},"spec":{"ports":[{"port":9080,"protocol":"TCP","targetPort":9080}],"selector":{"app":"wawi"},"type":"ClusterIP"}}
+    creationTimestamp: "2024-09-08T19:52:02Z"
+    name: wawi
+    namespace: vanille-shop-production
+    resourceVersion: "4007980"
+    uid: 2788b7ae-fed0-4490-9794-e1d8dd557f41
+  spec:
+    clusterIP: 10.245.45.137
+    clusterIPs:
+    - 10.245.45.137
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - port: 9080
+      protocol: TCP
+      targetPort: 9080
+    selector:
+      app: wawi
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+kind: List
+metadata:
+  resourceVersion: ""

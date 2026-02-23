@@ -1,0 +1,42 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: loki
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  url: https://grafana.github.io/helm-charts
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: loki
+  namespace: flux-system
+spec:
+  targetNamespace: prometheus
+  chart:
+    spec:
+      chart: loki
+      interval: 5m
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: loki
+      version: 6.46.0
+  install:
+    remediation:
+      retries: 3
+  interval: 5m
+  releaseName: loki
+  test:
+    enable: false
+  # this take potentially long time depending on the number of nodes
+  timeout: 15m
+  upgrade:
+    remediation:
+      retries: 3
+  # https://github.com/grafana/loki/blob/main/production/helm/loki/values.yaml
+  valuesFrom:
+    - kind: ConfigMap
+      name: loki-values

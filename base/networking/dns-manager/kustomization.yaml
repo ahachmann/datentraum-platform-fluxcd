@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+metadata:
+  name: external-dns-stack
+resources:
+  - external-dns.yaml
+#  - podinfo-test.yaml
+#  - kuard-test.yaml
+configMapGenerator:
+  - name: external-dns-values
+    namespace: external-dns
+    files:
+      - values.yaml
+generatorOptions:
+  disableNameSuffixHash: true
+

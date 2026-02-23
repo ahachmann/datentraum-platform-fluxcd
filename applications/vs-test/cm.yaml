@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vanilleshop-logback-config
+  namespace: vanille-shop-production
+data:
+  logback.xml: "<configuration debug=\"false\">\n\n\t<appender name=\"STDOUT\"\n\t\tclass=\"ch.qos.logback.core.ConsoleAppender\">\n\t\t\n\t\t<!--
+    encoders are by default assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder
+    -->\n\t\t<encoder>\n\t\t\t<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger
+    - %msg%n\n\t\t\t</pattern>\n\t\t</encoder>\n\t</appender>\n\t<root level=\"WARN\">\n\t\t<appender-ref
+    ref=\"STDOUT\" />\n\t</root>\n\t<logger name=\"org.springframework.transaction\"
+    level=\"WARN\"  additivity=\"false\">\n\t\t<appender-ref ref=\"STDOUT\"/>\n\t</logger>\n\t<logger
+    name=\"org.hibernate.tool.hbm2ddl\" level=\"WARN\"  additivity=\"false\">\n\t\t<appender-ref
+    ref=\"STDOUT\"/>\n\t</logger>\n\t<logger name=\"org.hibernate\" level=\"WARN\"
+    \ additivity=\"false\">\n\t\t<appender-ref ref=\"STDOUT\"/>\n\t</logger>\n\t<logger
+    name=\"org.hibernate.SQL\" level=\"WARN\"  additivity=\"false\">\n\t\t<appender-ref
+    ref=\"STDOUT\"/>\n\t</logger>\n\t<logger name=\"de.datentraum.stockmanagement\"
+    level=\"INFO\" additivity=\"false\">\n\t\t<appender-ref ref=\"STDOUT\"/>\n\t</logger>\n\t<logger
+    name=\"de.vanilleshop.common.eventbus\" level=\"INFO\" additivity=\"false\">\n\t\t<appender-ref
+    ref=\"STDOUT\"/>\n\t</logger>\n\t<logger name=\"de.datentraum\" level=\"INFO\"
+    additivity=\"false\">\n\t\t<appender-ref ref=\"STDOUT\"/>\n\t</logger>\n\t<logger
+    name=\"de.datentraum.aop\" level=\"INFO\" additivity=\"false\">\n\t\t<appender-ref
+    ref=\"STDOUT\"/>\n\t</logger>\n\t<logger name=\"org.apache.catalina.webresources\"
+    level=\"ERROR\" additivity=\"false\">\n\t\t<appender-ref ref=\"STDOUT\"/>\n\t</logger>\n\t\n\t<logger
+    name=\"de.vanilleshop\" level=\"INFO\" additivity=\"false\">\n\t\t<appender-ref
+    ref=\"STDOUT\"/>\n\t</logger>\n\t<logger name=\"org.springframework\" level=\"WARN\"
+    additivity=\"false\">\n\t\t<appender-ref ref=\"STDOUT\"/>\n\t</logger>\n\t<logger
+    name=\"org.atmosphere\" level=\"WARN\" additivity=\"false\">\n\t\t<appender-ref
+    ref=\"STDOUT\"/>\n\t</logger>\n\t<logger name=\"de.datentraum.stockmanagement.assessment\"
+    level=\"INFO\" additivity=\"false\">\n\t\t<appender-ref ref=\"STDOUT\"/>\n\t</logger>\n\t<logger
+    name=\"org.apache\" level=\"WARN\" additivity=\"false\">\n\t\t<appender-ref
+    ref=\"STDOUT\"/>\n\t</logger>\n</configuration>"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wawi-config
+  namespace: vanille-shop-production
+data:
+  DE_DATENTRAUM_DOCUMENTMANAGEMENT_PATH: /var/wawi-files
+  DE_DATENTRAUM_MQTT_CLIENTID: wawi-prod
+  DE_DATENTRAUM_MQTT_ENABLED: "true"
+  DE_DATENTRAUM_MQTT_ENVIRONMENT: prod
+  DE_DATENTRAUM_MQTT_HOSTPORT: tcp://mqtt-mosquitto:1883
+  DE_DATENTRAUM_PERSISTENCE_SCHEMA_AUTO: validate
+  DE_DATENTRAUM_PRESTA_SECRET: NONE
+  DE_DATENTRAUM_PRESTA_STOCKUPDATE: "false"
+  DE_DATENTRAUM_PRESTA_URL: https://www.vanille-shop.de/api
+  DE_DATENTRAUM_SHOPLOADAVAILABILITY_ENABLED: "true"
+  DE_DATENTRAUM_SHOPLOADAVAILABILITY_INTERVAL: 0 15 21 * * *
+  DE_DATENTRAUM_SHOPLOADORDERREADINTERVAL: 0 * * * * *
+  DE_DATENTRAUM_SHOPLOADSERVICEUPDATEONMOVE: "true"
+  DE_DATENTRAUM_SHOPLOADSERVICEUPDATEONSALES: "true"
+  DE_DATENTRAUM_STOCKMANAGEMENT_BESTBEFORETIMERPERIOD: 0 0 6 * * *
+  DE_DATENTRAUM_SW6_API_AUTHORIZATIONURL: https://www.vanille-shop.de/api/oauth/token
+  DE_DATENTRAUM_SW6_API_URL: https://www.vanille-shop.de/api/
+  DE_VANILLESHOP_SHOPLOADER_NAME: sw6
+  DE_VANILLESHOP_SHOPLOADER_SW6_AUTHORIZATIONURL: https://www.vanille-shop.de/api/oauth/token
+  DE_VANILLESHOP_SHOPLOADER_SW6_SHOPURL: https://www.vanille-shop.de/api
+  HIBERNATE_HBM2DDL_AUTO: validate
+  LOGGING_LEVEL_ROOT: INFO
+  MAIL_BESTBEFORERECIPIENT: team@vanille-shop.de
+  MAIL_DEBUG: "true"
+  MAIL_SMTP_AUTH: "true"
+  MAIL_SMTP_PORT: "587"
+  MAIL_SMTP_SERVER: smtp.office365.com
+  MAIL_SMTP_STARTTLS_ENABLE: "true"
+  MAIL_SMTP_USER: backend@vanille-shop.de
+  MAIL_TRANSPORT_PROTOCOL: smtp
+  SERVER_PORT: "9080"
+  SPRING_CLOUD_ENABLED: "true"
+  SPRING_PROFILES_ACTIVE: k8s

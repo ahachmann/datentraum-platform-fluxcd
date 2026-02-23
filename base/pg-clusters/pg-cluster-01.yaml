@@ -1,0 +1,51 @@
+# ---
+# apiVersion: onepassword.com/v1
+# kind: OnePasswordItem
+# metadata:
+#   name: initial-user-secret
+#   namespace: pg-cluster
+# spec:
+#   itemPath: "vaults/Infrastruktur/items/Postgres-Initial-DB"
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster 
+metadata:
+  name: pg-cluster-01
+  namespace: pg-cluster
+spec:
+  instances: 3
+  plugins: []
+  enableSuperuserAccess: true
+  imageName: ghcr.io/tensorchord/cloudnative-vectorchord:16.9-0.4.3
+  managed: {}
+  postgresql:
+    shared_preload_libraries:
+      - "vchord.so"
+  monitoring:
+    customQueriesConfigMap:
+      - key: queries
+        name: cnpg-default-monitoring
+    disableDefaultQueries: false
+    enablePodMonitor: true   # Prometheus Operator auto-discovery aktivieren
+  storage:
+    size: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pg-cluster-01-rw-np
+  namespace: pg-cluster
+  labels:
+    cnpg.io/cluster: pg-cluster-01
+  annotations:
+    cnpg.io/operatorVersion: 1.27.0
+spec:
+  ports:
+    - name: postgres
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+  selector:
+    cnpg.io/cluster: pg-cluster-01
+    cnpg.io/instanceRole: primary
+  type: NodePort
