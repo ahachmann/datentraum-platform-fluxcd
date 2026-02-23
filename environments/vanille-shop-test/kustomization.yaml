@@ -4,8 +4,6 @@ metadata:
   name: datentraum-base
 resources:
   - ../../base/networking/dns-manager
-#  - ../../base/security
-#  - ../../base/monitoring
 patches:
   - target:
       kind: OnePasswordItem
@@ -15,24 +13,24 @@ patches:
       - op: replace
         path: /spec/itemPath
         value: "vaults/VS-Infra/items/hetzner-api-key"
-  - target:
-      kind: HelmRelease
-      name: grafana
-      namespace: monitoring
-    patch: |-
-      - op: add
-        path: /spec/values
-        value: 
-          grafana:
-            ingress:
-              hosts:        
-                - "grafana.vanille.hamburg"
-            persistence:
-              enabled: true
-              storageClassName: hcloud-volumes
-          prometheus:
-            prometheusSpec:
-              storageSpec:
-                volumeClaimTemplate:
-                  spec:
-                    storageClassName: hcloud-volumes
+  # - target:
+  #     kind: HelmRelease
+  #     name: grafana
+  #     namespace: monitoring
+  #   patch: |-
+  #     - op: add
+  #       path: /spec/values
+  #       value: 
+  #         grafana:
+  #           ingress:
+  #             hosts:        
+  #               - "grafana.vanille.hamburg"
+  #           persistence:
+  #             enabled: true
+  #             storageClassName: hcloud-volumes
+  #         prometheus:
+  #           prometheusSpec:
+  #             storageSpec:
+  #               volumeClaimTemplate:
+  #                 spec:
+  #                   storageClassName: hcloud-volumes
