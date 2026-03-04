@@ -11,7 +11,7 @@ spec:
     branch: main
   secretRef:
     name: flux-system
-  url: https://github.com/ahachmann/datentraum-platform-fluxcd.git
+  url: ssh://git@github.com/ahachmann/datentraum-platform-fluxcd.git
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
