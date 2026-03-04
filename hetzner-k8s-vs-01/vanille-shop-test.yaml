@@ -18,5 +18,5 @@ spec:
     kind: GitRepository
     name: datentraum
   postBuild:
-      substitute:
-        FLUX_NAMESPACE: vanille-shop-flux    
+    substitute:
+      FLUX_NAMESPACE: ${FLUX_NAMESPACE}   
