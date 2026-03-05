@@ -1,26 +1,48 @@
+---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: vanille-shop-flux
 ---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: vs-deploy-ssh-key
+  namespace: vanille-shop-flux
+spec:
+  itemPath: "vaults/VS-Infra/items/VS GitHub Deploy SSH-Key"  
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: datentraum-platform-fluxcd
+  namespace: vanille-shop-flux
+spec:
+  interval: 1m0s
+  ref:
+    branch: main
+  secretRef:
+    name: vs-deploy-ssh-key
+  url: ssh://git@github.com/ahachmann/datentraum-platform-fluxcd.git
+---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: vanille-shop-test
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: vanille-shop-test
-  namespace: vanille-shop-flux
-spec:
-  interval: 10m0s
-  targetNamespace: vanille-shop-test
-  path: ./environments/vanille-shop-test
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  postBuild:
-    substitute:
-      FLUX_NAMESPACE: vanille-shop-flux 
+# ---
+# apiVersion: kustomize.toolkit.fluxcd.io/v1
+# kind: Kustomization
+# metadata:
+#   name: vanille-shop-test
+#   namespace: vanille-shop-flux
+# spec:
+#   interval: 10m0s
+#   targetNamespace: vanille-shop-test
+#   path: ./environments/vanille-shop-test
+#   prune: true
+#   sourceRef:
+#     kind: GitRepository
+#     name: datentraum-platform-fluxcd
+#   postBuild:
+#     substitute:
+#       FLUX_NAMESPACE: vanille-shop-flux 
