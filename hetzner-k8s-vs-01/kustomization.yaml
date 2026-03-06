@@ -5,7 +5,8 @@ resources:
   - ../base/networking/dns-manager
   - ../base/monitoring/prometheus-stack
   - ../base/operator/cnpg
-  - vanille-shop-test.yaml
+  - pg-cluster-01.yaml
+#  - vanille-shop-test.yaml
 patches:
   - target:
       kind: OnePasswordItem
