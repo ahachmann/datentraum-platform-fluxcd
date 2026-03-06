@@ -4,6 +4,7 @@ resources:
   - ../base/security/cert-manager
   - ../base/networking/dns-manager
   - ../base/monitoring/prometheus-stack
+  - ../base/operator/cnpg
   - vanille-shop-test.yaml
 patches:
   - target:
