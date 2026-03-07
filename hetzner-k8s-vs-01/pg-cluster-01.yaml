@@ -30,53 +30,54 @@ spec:
         key: SecretKey
     wal:
       compression: gzip
-# ---
-# apiVersion: kustomize.toolkit.fluxcd.io/v1
-# kind: Kustomization
-# metadata:
-#   name: pg-cluster
-#   namespace: flux-system
-# spec:
-#   targetNamespace: pg-cluster
-#   interval: 10m0s
-#   path: ./hetzner-k8s-01/base/pg-clusters
-#   prune: true
-#   sourceRef:
-#     kind: GitRepository
-#     name: flux-system
-#   patches:
-#     - patch: |-
-#         - op: replace
-#           path: /spec/managed
-#           value:
-#             roles:
-#               - name: immich-user
-#                 login: true
-#                 ensure: present
-#                 createdb: false
-#                 passwordSecret:
-#                   name: immich-user-secret
-#               - name: schwarze-null-user
-#                 login: true
-#                 ensure: present
-#                 createdb: false
-#                 passwordSecret:
-#                   name: schwarze-null-user-secret
-#               - name: vs-user
-#                 login: true
-#                 ensure: present
-#                 createdb: false
-#                 passwordSecret:
-#                   name: vs-user-secret
-#         - op: replace
-#           path: /spec/plugins
-#           value:
-#             - name: barman-cloud.cloudnative-pg.io
-#               isWALArchiver: true
-#               parameters:
-#                 barmanObjectName: minio-store
-#       target:
-#         kind: Cluster
-#         name: pg-cluster-01
-#         namespace: pg-cluster
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: pg-cluster
+  namespace: flux-system
+spec:
+  targetNamespace: pg-cluster
+  interval: 10m0s
+  path: ./hetzner-k8s-01/base/pg-clusters
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  patches:
+    - patch: |-
+        - op: replace
+          path: /spec/plugins
+          value:
+            - name: barman-cloud.cloudnative-pg.io
+              isWALArchiver: true
+              parameters:
+                barmanObjectName: hetzner-s3-store
+      target:
+        kind: Cluster
+        name: pg-cluster-01
+        namespace: pg-cluster
+
+# - op: replace
+#   path: /spec/managed
+#   value:
+#     roles:
+#       - name: immich-user
+#         login: true
+#         ensure: present
+#         createdb: false
+#         passwordSecret:
+#           name: immich-user-secret
+#       - name: schwarze-null-user
+#         login: true
+#         ensure: present
+#         createdb: false
+#         passwordSecret:
+#           name: schwarze-null-user-secret
+#       - name: vs-user
+#         login: true
+#         ensure: present
+#         createdb: false
+#         passwordSecret:
+#           name: vs-user-secret
   

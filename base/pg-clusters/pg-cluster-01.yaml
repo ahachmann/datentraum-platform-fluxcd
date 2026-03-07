@@ -30,6 +30,31 @@ spec:
   storage:
     size: 10Gi
 ---
+apiVersion: postgresql.cnpg.io/v1
+kind: Backup
+metadata:
+  name: initial-backup
+spec:
+  cluster:
+    name: pg-cluster-01
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: pg-cluster-01-daily-backup
+  namespace: pg-cluster
+spec:
+  schedule: "0 0 0 * * *"  # At midnight every day
+  backupOwnerReference: self
+  cluster:
+    name: pg-cluster-01
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io    
+---
 apiVersion: v1
 kind: Service
 metadata:
