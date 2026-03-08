@@ -19,7 +19,7 @@ metadata:
   namespace: pg-cluster
 spec:
   configuration:
-    destinationPath: s3://wh-gmbh-pg-backup/
+    destinationPath: s3://wh-gmbh-pg-backup/20260308
     endpointURL: https://fsn1.your-objectstorage.com
     s3Credentials:
       accessKeyId:
@@ -39,7 +39,7 @@ metadata:
 spec:
   targetNamespace: pg-cluster
   interval: 10m0s
-  path: ./hetzner-k8s-01/base/pg-clusters
+  path: ./base/pg-clusters
   prune: true
   sourceRef:
     kind: GitRepository
