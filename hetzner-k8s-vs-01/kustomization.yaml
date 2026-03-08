@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
   - ../base/security/cert-manager
   - ../base/networking/dns-manager
-  - ../base/monitoring/prometheus-stack
+#  - ../base/monitoring/prometheus-stack
   - ../base/operator/cnpg
   - pg-cluster-01.yaml
 #  - vanille-shop-test.yaml
