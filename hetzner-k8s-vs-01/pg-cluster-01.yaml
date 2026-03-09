@@ -11,6 +11,14 @@ metadata:
   namespace: pg-cluster
 spec:
   itemPath: "vaults/VS-Infra/items/PG Backup S3 Secrets"
+--- # Wawi VS Test
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: pg-wawi-secret
+  namespace: pg-cluster
+spec:
+  itemPath: "vaults/VS-Infra/items/Wawi VS Test"
 ---
 apiVersion: barmancloud.cnpg.io/v1
 kind: ObjectStore
@@ -53,11 +61,31 @@ spec:
               isWALArchiver: true
               parameters:
                 barmanObjectName: hetzner-s3-store
+        - op: replace
+          path: /spec/managed
+          value:
+            roles:
+              - name: wawi
+                login: true
+                ensure: present
+                createdb: false
+                passwordSecret:
+                  name: pg-wawi-secret
       target:
         kind: Cluster
         name: pg-cluster-01
         namespace: pg-cluster
-
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: wawi-database
+  namespace: pg-cluster
+spec:
+  name: wawi
+  owner: wawi
+  cluster:
+    name: pg-cluster-01
 # - op: replace
 #   path: /spec/managed
 #   value:
