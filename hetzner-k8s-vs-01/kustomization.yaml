@@ -5,7 +5,7 @@ resources:
   - ../base/networking/dns-manager
   - ../base/monitoring/prometheus-stack
   - ../base/operator/cnpg
-  - pg-cluster-01.yaml
+#  - pg-cluster-01.yaml
 #  - vanille-shop-test.yaml
 patches:
   - target:
