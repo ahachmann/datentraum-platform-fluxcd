@@ -47,7 +47,7 @@ spec:
       protocol: TCP
       port: 5432
       targetPort: 5432
-      nodePorg: 30432
+      nodePort: 30432
   selector:
     cnpg.io/cluster: pg-cluster-01
     cnpg.io/instanceRole: primary
