@@ -35,7 +35,7 @@ metadata:
   namespace: pg-cluster
 spec:
   configuration:  
-    destinationPath: s3://wh-gmbh-pg-backup/20260311-1
+    destinationPath: s3://wh-gmbh-pg-backup/20260311-2
     endpointURL: https://fsn1.your-objectstorage.com
     s3Credentials:
       accessKeyId:
@@ -54,7 +54,7 @@ metadata:
   namespace: pg-cluster
 spec:
   configuration:
-    destinationPath: s3://wh-gmbh-pg-backup/20260311
+    destinationPath: s3://wh-gmbh-pg-backup/20260311-1
     endpointURL: https://fsn1.your-objectstorage.com
     s3Credentials:
       accessKeyId:
