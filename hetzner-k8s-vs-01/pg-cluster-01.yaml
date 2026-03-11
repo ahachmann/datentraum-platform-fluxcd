@@ -35,7 +35,7 @@ metadata:
   namespace: pg-cluster
 spec:
   configuration:  
-    destinationPath: s3://wh-gmbh-pg-backup/20260310
+    destinationPath: s3://wh-gmbh-pg-backup/20260311
     endpointURL: https://fsn1.your-objectstorage.com
     s3Credentials:
       accessKeyId:
@@ -54,7 +54,7 @@ metadata:
   namespace: pg-cluster
 spec:
   configuration:
-    destinationPath: s3://wh-gmbh-pg-backup/20260308
+    destinationPath: s3://wh-gmbh-pg-backup/20260310
     endpointURL: https://fsn1.your-objectstorage.com
     s3Credentials:
       accessKeyId:
@@ -101,12 +101,17 @@ spec:
         - op: add
           path: /spec/externalClusters
           value:
-            - name: origin
+            - name: restore-source
               plugin:
                 name: barman-cloud.cloudnative-pg.io
                 parameters:
                   barmanObjectName: hetzner-s3-restore
-                  serverName: pg-cluster-01       
+                  serverName: pg-cluster-01  
+        - op: add
+          path: /spec/bootstrap
+          value:
+            recovery:
+              source: restore-source
       target:
         kind: Cluster
         name: pg-cluster-01
