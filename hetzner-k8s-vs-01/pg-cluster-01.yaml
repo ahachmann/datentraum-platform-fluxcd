@@ -11,7 +11,15 @@ metadata:
   namespace: pg-cluster
 spec:
   itemPath: "vaults/VS-Infra/items/PG Backup S3 Secrets"
---- # Wawi VS Test
+--- # Wawi VS Test - 
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: pg-superuser-secret
+  namespace: pg-cluster
+spec:
+  itemPath: "vaults/VS-Infra/items/VS Postgres Superuser"
+---
 apiVersion: onepassword.com/v1
 kind: OnePasswordItem
 metadata:
@@ -24,6 +32,25 @@ apiVersion: barmancloud.cnpg.io/v1
 kind: ObjectStore
 metadata:
   name: hetzner-s3-store
+  namespace: pg-cluster
+spec:
+  configuration:  
+    destinationPath: s3://wh-gmbh-pg-backup/20260310
+    endpointURL: https://fsn1.your-objectstorage.com
+    s3Credentials:
+      accessKeyId:
+        name: pg-backup-s3-key-secret
+        key: AccessKey
+      secretAccessKey:
+        name: pg-backup-s3-key-secret
+        key: SecretKey
+    wal:
+      compression: gzip
+---
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: hetzner-s3-restore
   namespace: pg-cluster
 spec:
   configuration:
@@ -71,6 +98,15 @@ spec:
                 createdb: false
                 passwordSecret:
                   name: pg-wawi-secret
+        - op: add
+          path: /spec/externalClusters
+          value:
+            - name: origin
+              plugin:
+                name: barman-cloud.cloudnative-pg.io
+                parameters:
+                  barmanObjectName: hetzner-s3-restore
+                  serverName: pg-cluster-01       
       target:
         kind: Cluster
         name: pg-cluster-01
