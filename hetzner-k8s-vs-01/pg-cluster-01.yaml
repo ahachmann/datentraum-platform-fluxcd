@@ -23,6 +23,14 @@ spec:
 apiVersion: onepassword.com/v1
 kind: OnePasswordItem
 metadata:
+  name: pg-keycloak-secret
+  namespace: pg-cluster
+spec:
+  itemPath: "vaults/VS-Infra/items/KeyCloak Database User"
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
   name: pg-wawi-secret
   namespace: pg-cluster
 spec:
@@ -98,6 +106,12 @@ spec:
                 createdb: false
                 passwordSecret:
                   name: pg-wawi-secret
+              - name: keycloak
+                login: true
+                ensure: present
+                createdb: false
+                passwordSecret:
+                  name: pg-keycloak-secret
         - op: add
           path: /spec/externalClusters
           value:
@@ -127,6 +141,18 @@ spec:
   owner: wawi
   cluster:
     name: pg-cluster-01
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: keycloak-database
+  namespace: pg-cluster
+spec:
+  name: keycloak
+  owner: keycloak
+  cluster:
+    name: pg-cluster-01
+
 # - op: replace
 #   path: /spec/managed
 #   value:
