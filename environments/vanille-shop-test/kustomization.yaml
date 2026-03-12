@@ -1,21 +1,4 @@
-  # - target:
-  #     kind: HelmRelease
-  #     name: grafana
-  #     namespace: monitoring
-  #   patch: |-
-  #     - op: add
-  #       path: /spec/values
-  #       value: 
-  #         grafana:
-  #           ingress:
-  #             hosts:        
-  #               - "grafana.vanille.hamburg"
-  #           persistence:
-  #             enabled: true
-  #             storageClassName: hcloud-volumes
-  #         prometheus:
-  #           prometheusSpec:
-  #             storageSpec:
-  #               volumeClaimTemplate:
-  #                 spec:
-  #                   storageClassName: hcloud-volumes
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../applications/mosquitto
