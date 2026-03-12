@@ -1,0 +1,24 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: iam
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: iam
+  namespace: vanille-shop-flux
+spec:
+  interval: 10m0s
+  targetNamespace: iam
+  path: ./base/security/keycloak
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: datentraum-platform-fluxcd
+  postBuild:
+    substitute:
+      DOMAIN: iam.vanille.hamburg
+      INGRESS: traefik
+      CLUSTER_ISSUER: letsencrypt-prod
