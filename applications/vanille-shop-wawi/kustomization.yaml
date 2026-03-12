@@ -3,4 +3,5 @@ kind: Kustomization
 metadata:
   name: vs-test
 resources:
+  - cm.yaml
   - db-secret.yaml

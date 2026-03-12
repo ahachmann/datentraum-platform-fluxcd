@@ -37,7 +37,7 @@ metadata:
   namespace: vanille-shop-flux
 spec:
   interval: 10m0s
-  targetNamespace: vanille-shop-test
+  targetNamespace: vanille-shop-flux
   path: ./environments/vanille-shop-test
   prune: true
   sourceRef:
@@ -45,4 +45,5 @@ spec:
     name: datentraum-platform-fluxcd
   postBuild:
     substitute:
+      TARGET_NAMESPACE: vanille-shop-test
       FLUX_NAMESPACE: vanille-shop-flux 
