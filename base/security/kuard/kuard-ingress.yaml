@@ -9,7 +9,7 @@ spec:
   tls:
     - hosts:
         - ${DOMAIN}
-      secretName: keycloak-general-tls
+      secretName: kuard-general-tls
   rules:
     - host: ${DOMAIN}
       http:
