@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kuard-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: ${CLUSTER_ISSUER}
+spec:
+  ingressClassName: ${INGRESS}
+  tls:
+    - hosts:
+        - ${DOMAIN}
+      secretName: keycloak-general-tls
+  rules:
+    - host: ${DOMAIN}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kuard
+                port:
+                  number: 80
