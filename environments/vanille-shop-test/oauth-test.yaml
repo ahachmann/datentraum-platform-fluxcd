@@ -3,8 +3,29 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: oauth-test
-  namespace: vanille-shop-flux
+  namespace: ${FLUX_NAMESPACE}
 spec:
+  interval: 10m0s
+  targetNamespace: iam
+  path: ./base/security/oauth2-proxy
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: datentraum-platform-fluxcd
+  postBuild:
+    substitute:
+      ISSUER: https://iam.vanille-shop.de/realms/VanilleShop
+      CLIENT_SECRET_ITEM_PATH: "vaults/VS-Infra/items/OAuth Client Secret"
+      DOMAIN: kuard.vanille.hamburg
+      TLS_SECRET_NAME: kuard-general-tls
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: kuard-test
+  namespace: ${FLUX_NAMESPACE}
+spec:
+  suspend: true
   interval: 10m0s
   targetNamespace: iam
   path: ./base/security/kuard

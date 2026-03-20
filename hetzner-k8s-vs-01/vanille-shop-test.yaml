@@ -37,7 +37,6 @@ metadata:
   namespace: vanille-shop-flux
 spec:
   interval: 10m0s
-  targetNamespace: vanille-shop-flux
   path: ./environments/vanille-shop-test
   prune: true
   sourceRef:
