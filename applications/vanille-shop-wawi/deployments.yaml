@@ -73,7 +73,7 @@ spec:
               name: vs-db-secret
               optional: false
         - name: SPRING_DATASOURCE_URL
-          value: jdbc:postgresql://private-wawi-db-postgresql-fra1-do-user-15764740-0.d.db.ondigitalocean.com:25060/wawi
+          value: jdbc:postgresql://pg-cluster-01-rw.pg-cluster:5432/wawi
         envFrom:
         - configMapRef:
             name: wawi-config
