@@ -7,7 +7,6 @@ metadata:
     traefik.ingress.kubernetes.io/router.tls: "true"
     traefik.ingress.kubernetes.io/router.middlewares: iam-oauth-errors@kubernetescrd,iam-oauth-auth@kubernetescrd,${TARGET_NAMESPACE}-sticky@kubernetescrd,${TARGET_NAMESPACE}-cors@kubernetescrd,${TARGET_NAMESPACE}-buffering@kubernetescrd
   name: wawi
-  namespace: vanille-shop-production
 spec:
   rules:
   - host: wawi.vanille-shop.de

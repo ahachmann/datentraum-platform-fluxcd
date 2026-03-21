@@ -3,4 +3,4 @@ kind: Kustomization
 resources:
   - oauth-test.yaml
 #  - ../../applications/mosquitto
-#  - wawi.yaml
+  - wawi.yaml
