@@ -25,7 +25,7 @@ metadata:
   name: kuard-test
   namespace: ${FLUX_NAMESPACE}
 spec:
-  suspend: true
+#  suspend: true
   interval: 10m0s
   targetNamespace: iam
   path: ./base/security/kuard
