@@ -41,6 +41,7 @@ spec:
         - --set-authorization-header=true
         - --pass-authorization-header=true
         - --pass-user-headers=true
+        - --skip-provider-button=true
         env:
         - name: OAUTH2_PROXY_CLIENT_ID
           valueFrom:

@@ -24,4 +24,4 @@ spec:
     service:
       name: oauth2-proxy
       port: 4180
-    query: /oauth2/start?rd={url}
+    query: /oauth2/sign_in?rd={url}
