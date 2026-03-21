@@ -3,5 +3,6 @@ kind: Kustomization
 metadata:
   name: vs-test
 resources:
+  - ../mosquitto
   - cm.yaml
   - db-secret.yaml
