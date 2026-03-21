@@ -14,7 +14,7 @@ spec:
     name: datentraum-platform-fluxcd
   postBuild:
     substitute:
-      ISSUER: https://iam.vanille-shop.de/realms/VanilleShop
+      ISSUER: https://iam.vanille.hamburg/realms/VanilleShop
       CLIENT_SECRET_ITEM_PATH: "vaults/VS-Infra/items/OAuth Client Secret"
       DOMAIN: kuard.vanille.hamburg
       TLS_SECRET_NAME: kuard-general-tls
