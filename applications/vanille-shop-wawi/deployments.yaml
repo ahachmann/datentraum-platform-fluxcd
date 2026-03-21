@@ -110,8 +110,8 @@ spec:
         - mountPath: /logback-spring.xml
           name: logback-config-volume
           subPath: logback.xml
-        - mountPath: /var/wawi-files
-          name: file-volume
+        # - mountPath: /var/wawi-files
+        #   name: file-volume
       dnsPolicy: ClusterFirst
       imagePullSecrets:
       - name: private-docker-registry-secret
@@ -120,9 +120,9 @@ spec:
       securityContext: {}
       terminationGracePeriodSeconds: 30
       volumes:
-      - name: file-volume
-        persistentVolumeClaim:
-          claimName: vs-documents
+      # - name: file-volume
+      #   persistentVolumeClaim:
+      #     claimName: vs-documents
       - configMap:
           defaultMode: 420
           name: vanilleshop-logback-config

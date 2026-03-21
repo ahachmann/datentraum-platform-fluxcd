@@ -6,3 +6,4 @@ resources:
   - ../mosquitto
   - cm.yaml
   - db-secret.yaml
+  - deployments.yaml
