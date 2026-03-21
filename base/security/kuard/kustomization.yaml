@@ -3,5 +3,4 @@ kind: Kustomization
 resources:
   - kuard-deployment.yaml
   - kuard-service.yaml
-  - kuard-oauth2-middleware.yaml
   - kuard-ingress.yaml
