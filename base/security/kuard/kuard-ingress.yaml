@@ -4,8 +4,9 @@ metadata:
   name: kuard-ingress
   annotations:
     cert-manager.io/cluster-issuer: ${CLUSTER_ISSUER}
-    nginx.ingress.kubernetes.io/auth-signin: https://\$host/oauth2/start?rd=$escaped_request_uri
-    nginx.ingress.kubernetes.io/auth-url: https://\$host/oauth2/auth
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.middlewares: iam-oauth-errors@kubernetescrd,iam-oauth-auth@kubernetescrd
 spec:
   ingressClassName: ${INGRESS}
   tls:

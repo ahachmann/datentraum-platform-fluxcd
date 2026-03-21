@@ -36,6 +36,10 @@ spec:
         - --cookie-expire=600000ms
         - --oidc-issuer-url=${ISSUER}
         - --email-domain=*
+        - --reverse-proxy=true
+        - --set-xauthrequest=true
+        - --set-authorization-header=true
+        - --pass-authorization-header=true
         - --pass-user-headers=true
         env:
         - name: OAUTH2_PROXY_CLIENT_ID
