@@ -36,6 +36,14 @@ metadata:
 spec:
   itemPath: "vaults/VS-Infra/items/Wawi VS Test"
 ---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: pg-nextcloud-secret
+  namespace: pg-cluster
+spec:
+  itemPath: "vaults/VS-Infra/items/Nextcloud Datenbank"
+---
 apiVersion: barmancloud.cnpg.io/v1
 kind: ObjectStore
 metadata:
@@ -112,6 +120,12 @@ spec:
                 createdb: false
                 passwordSecret:
                   name: pg-keycloak-secret
+              - name: nextcloud
+                login: true
+                ensure: present
+                createdb: false
+                passwordSecret:
+                  name: pg-nextcloud-secret
         - op: add
           path: /spec/externalClusters
           value:
@@ -150,6 +164,17 @@ metadata:
 spec:
   name: keycloak
   owner: keycloak
+  cluster:
+    name: pg-cluster-01
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: nextcloud-database
+  namespace: pg-cluster
+spec:
+  name: nextcloud
+  owner: nextcloud
   cluster:
     name: pg-cluster-01
 
