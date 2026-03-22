@@ -5,6 +5,7 @@ resources:
   - ../base/networking/dns-manager
   - ../base/monitoring/prometheus-stack
   - ../base/operator/cnpg
+  - git-repo.yaml
   - pg-cluster-01.yaml
   - iam.yaml
   - vanille-shop-test.yaml
