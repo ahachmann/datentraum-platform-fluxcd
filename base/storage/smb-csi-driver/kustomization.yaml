@@ -7,3 +7,4 @@ resources:
   - csi-smb-driver.yaml
   - csi-smb-node.yaml
   - rbac-csi-smb.yaml
+  - test-share.yaml
