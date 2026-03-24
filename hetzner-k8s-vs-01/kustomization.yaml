@@ -20,6 +20,22 @@ patches:
       - op: replace
         path: /spec/itemPath
         value: "vaults/VS-Infra/items/hetzner-api-key"
+  - target:
+      kind: OnePasswordItem
+      name: storagebox-test-smb-creds
+      namespace: kube-system
+    patch: |-
+      - op: replace
+        path: /spec/itemPath
+        value: "vaults/VS-Infra/items/VS Document Test SMB"
+  - target:
+      kind: StorageClass
+      name: storagebox-test-smb-sc
+      namespace: kube-system
+    patch: |-
+      - op: replace
+        path: /parameters/source
+        value: "//u566750.your-storagebox.de/u566750-sub1"
   - target: 
       kind: HelmRelease
       name: kube-prometheus-stack

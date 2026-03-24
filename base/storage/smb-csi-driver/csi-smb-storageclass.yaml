@@ -1,0 +1,30 @@
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: storagebox-test-smb-creds
+  namespace: kube-system
+spec:
+  itemPath: "vaults/VS-Infra/items/VS Document Test SMB"
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: storagebox-test-smb-sc
+provisioner: smb.csi.k8s.io
+parameters:
+  # On Windows, "*.default.svc.cluster.local" could not be recognized by csi-proxy
+  source: //u566750.your-storagebox.de/u566750-sub1
+  # if csi.storage.k8s.io/provisioner-secret is provided, will create a sub directory
+  # with PV name under source
+  csi.storage.k8s.io/provisioner-secret-name: storagebox-test-smb-creds
+  csi.storage.k8s.io/provisioner-secret-namespace: kube-system
+  csi.storage.k8s.io/node-stage-secret-name: storagebox-test-smb-creds
+  csi.storage.k8s.io/node-stage-secret-namespace: kube-system
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+mountOptions:
+  - dir_mode=0777
+  - file_mode=0777
+  - uid=1001
+  - gid=1001
