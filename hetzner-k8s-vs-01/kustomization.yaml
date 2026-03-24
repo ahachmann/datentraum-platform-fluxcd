@@ -1,6 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - ../base/storage/smb-csi-driver
   - ../base/security/cert-manager
   - ../base/networking/dns-manager
   - ../base/monitoring/prometheus-stack
