@@ -1,0 +1,63 @@
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: storagebox-test-smb-creds
+  namespace: vanille-shop-test
+spec:
+  itemPath: "vaults/VS-Infra/items/VS-Document-Test-SMB"
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: storagebox-test-smb-sc
+provisioner: smb.csi.k8s.io
+parameters:
+  # On Windows, "*.default.svc.cluster.local" could not be recognized by csi-proxy
+  source: //u566750.your-storagebox.de/u566750-sub1
+  # if csi.storage.k8s.io/provisioner-secret is provided, will create a sub directory
+  # with PV name under source
+  csi.storage.k8s.io/provisioner-secret-name: storagebox-test-smb-creds
+  csi.storage.k8s.io/provisioner-secret-namespace: vanille-shop-test
+  csi.storage.k8s.io/node-stage-secret-name: storagebox-test-smb-creds
+  csi.storage.k8s.io/node-stage-secret-namespace: vanille-shop-test
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+mountOptions:
+  - dir_mode=0777
+  - file_mode=0777
+  - uid=1001
+  - gid=1001
+---
+---
+# Deployment of a simple test pod to verify the functionality of the smb-csi-driver
+apiVersion: v1
+kind: Pod
+metadata:
+  name: smb-test-pod
+  namespace: default
+spec:
+  containers:
+    - name: smb-test-container
+      image: busybox
+      command: ["/bin/sh", "-c", "sleep 3600"]
+      volumeMounts:
+        - name: smb-test-volume
+          mountPath: /mnt/smb
+  volumes:
+    - name: smb-test-volume
+      persistentVolumeClaim:
+        claimName: smb-test-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: smb-test-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: storagebox-test-smb-sc

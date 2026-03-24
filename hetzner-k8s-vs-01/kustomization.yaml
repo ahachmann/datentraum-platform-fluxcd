@@ -21,14 +21,6 @@ patches:
         path: /spec/itemPath
         value: "vaults/VS-Infra/items/hetzner-api-key"
   - target:
-      kind: OnePasswordItem
-      name: storagebox-test-smb-creds
-      namespace: kube-system
-    patch: |-
-      - op: replace
-        path: /spec/itemPath
-        value: "vaults/VS-Infra/items/VS Document Test SMB"
-  - target:
       kind: StorageClass
       name: storagebox-test-smb-sc
       namespace: kube-system
