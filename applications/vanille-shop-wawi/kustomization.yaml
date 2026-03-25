@@ -6,5 +6,4 @@ resources:
   - ../mosquitto
   - cm.yaml
   - db-secret.yaml
-  - test-volume.yaml
 #  - deployments.yaml
