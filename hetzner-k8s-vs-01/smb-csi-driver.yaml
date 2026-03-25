@@ -19,5 +19,6 @@ spec:
     name: flux-system
   postBuild:
     substitute:
+      SMB_VOLUME_URL: //u566750.your-storagebox.de/u566750-sub1
       SMB_CSI_DRIVER_CREDS_ITEM_PATH: vaults/VS-Infra/items/VS-Document-Test-SMB
       NAMESPACE: smb-csi-driver

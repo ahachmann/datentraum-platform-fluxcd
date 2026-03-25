@@ -5,7 +5,7 @@ resources:
   - ../base/networking/dns-manager
   - ../base/monitoring/prometheus-stack
   - ../base/operator/cnpg
-#  - smb-csi-driver.yaml
+  - smb-csi-driver.yaml
   - git-repo.yaml
   - pg-cluster-01.yaml
   - iam.yaml
