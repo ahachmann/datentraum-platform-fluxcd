@@ -30,7 +30,7 @@ spec:
   test:
     enable: false
   # this take potentially long time depending on the number of nodes
-  timeout: 3m
+  timeout: 6m
   upgrade:
     remediation:
       retries: 3

@@ -10,7 +10,7 @@ spec:
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: storagebox-test-smb-sc
+  name: ${STORAGE_CLASS_NAME}
 provisioner: smb.csi.k8s.io
 parameters:
   # See https://github.com/kubernetes-csi/csi-driver-smb/blob/master/docs/driver-parameters.md

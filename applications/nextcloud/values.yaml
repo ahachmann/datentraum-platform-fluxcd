@@ -105,8 +105,8 @@ nextcloud:
   objectStore:
     # https://docs.nextcloud.com/server/latest/admin_manual/configuration_files/primary_storage.html#simple-storage-service-s3
     s3:
-      enabled: true
-      existingSecret: "vs-nextcloud-s3"
+      enabled: false
+      # existingSecret: "vs-nextcloud-s3"
       secretKeys:
         # key in nextcloud.objectStore.s3.existingSecret to use for s3 endpoint
         host: "URL"
@@ -517,11 +517,12 @@ persistence:
   ##   GKE, AWS & OpenStack)
   ##
   storageClass: "hcloud-volumes"
+  #storageClass: "${STORAGE_CLASS_NAME}"
 
   ## A manually managed Persistent Volume and Claim
   ## Requires persistence.enabled: true
   ## If defined, PVC must be created manually before volume will be bound
-  # existingClaim:
+  # existingClaim: vs-nextcloud-www-pvc
 
   accessMode: ReadWriteOnce
   size: 10Gi
@@ -532,16 +533,14 @@ persistence:
   ## Use an additional pvc for the data directory rather than a subpath of the default PVC
   ## Useful to store data on a different storageClass (e.g. on slower disks)
   nextcloudData:
-    enabled: false
+    enabled: true
     # -- If defined, use a hostPath volume for nextcloud data rather than a dynamically defined PVC.
-    hostPath:
-    subPath:
     labels: {}
     annotations: {}
-    # storageClass: "-"
-    # existingClaim:
+    # storageClass: "${STORAGE_CLASS_NAME}"
+    existingClaim: vs-nextcloud-data-pvc
     accessMode: ReadWriteOnce
-    size: 8Gi
+    size: 500Gi
 
 resources: {}
 # We usually recommend not to specify default resources and to leave this as a conscious
@@ -581,7 +580,7 @@ readinessProbe:
   successThreshold: 1
 startupProbe:
   enabled: false
-  initialDelaySeconds: 30
+  initialDelaySeconds: 180
   periodSeconds: 10
   timeoutSeconds: 5
   failureThreshold: 30

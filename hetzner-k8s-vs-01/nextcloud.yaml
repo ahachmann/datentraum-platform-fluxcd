@@ -24,3 +24,4 @@ spec:
       TLS_SECRET_NAME: nextcloud-general-tls
       DOMAIN: cloud.vanille.hamburg
       CLUSTER_ISSUER: letsencrypt-staging
+      STORAGE_CLASS_NAME: storagebox-test-smb-sc
