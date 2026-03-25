@@ -11,3 +11,9 @@ spec:
   sourceRef:
     kind: GitRepository
     name: datentraum-platform-fluxcd
+  postBuild:
+    substitute:
+      TARGET_NAMESPACE: vanille-shop-test
+      FLUX_NAMESPACE: vanille-shop-flux 
+      STORAGE_CLASS_NAME: storagebox-test-smb-sc
+      PVC_STORAGE_SIZE: 10Gi
