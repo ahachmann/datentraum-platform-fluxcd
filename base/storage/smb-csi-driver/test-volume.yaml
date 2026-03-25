@@ -1,0 +1,30 @@
+---
+# Deployment of a simple test pod to verify the functionality of the smb-csi-driver
+apiVersion: v1
+kind: Pod
+metadata:
+  name: smb-test-pod
+spec:
+  containers:
+    - name: smb-test-container
+      image: busybox
+      command: ["/bin/sh", "-c", "sleep 3600"]
+      volumeMounts:
+        - name: smb-test-volume
+          mountPath: /mnt/smb
+  volumes:
+    - name: smb-test-volume
+      persistentVolumeClaim:
+        claimName: smb-test-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: smb-test-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: storagebox-test-smb-sc 
