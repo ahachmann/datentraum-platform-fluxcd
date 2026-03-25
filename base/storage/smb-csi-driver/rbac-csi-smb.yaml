@@ -3,13 +3,13 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: csi-smb-controller-sa
-  namespace: kube-system
+  namespace: ${NAMESPACE}
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: csi-smb-node-sa
-  namespace: kube-system
+  namespace: ${NAMESPACE}
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
@@ -48,7 +48,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: csi-smb-controller-sa
-    namespace: kube-system
+    namespace: ${NAMESPACE}
 roleRef:
   kind: ClusterRole
   name: smb-external-provisioner-role
@@ -82,7 +82,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: csi-smb-controller-sa
-    namespace: kube-system
+    namespace: ${NAMESPACE}
 roleRef:
   kind: ClusterRole
   name: smb-external-resizer-role
@@ -104,7 +104,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: csi-smb-node-sa
-    namespace: kube-system
+    namespace: ${NAMESPACE}
 roleRef:
   kind: ClusterRole
   name: csi-smb-node-secret-role

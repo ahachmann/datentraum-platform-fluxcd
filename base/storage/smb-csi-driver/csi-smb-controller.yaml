@@ -3,7 +3,7 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: csi-smb-controller
-  namespace: kube-system
+  namespace: ${NAMESPACE}
 spec:
   replicas: 1
   selector:
@@ -55,7 +55,7 @@ spec:
               name: socket-dir
           resources:
             limits:
-              cpu: 1
+              cpu: "1"
               memory: 400Mi
             requests:
               cpu: 10m
@@ -80,6 +80,7 @@ spec:
               mountPath: /csi
           resources:
             limits:
+              cpu: "1"
               memory: 400Mi
             requests:
               cpu: 10m
@@ -100,7 +101,7 @@ spec:
               mountPath: /csi
           resources:
             limits:
-              cpu: 1
+              cpu: "1"
               memory: 100Mi
             requests:
               cpu: 10m
@@ -142,10 +143,11 @@ spec:
               name: socket-dir
           resources:
             limits:
-              memory: 200Mi
+              cpu: "1"
+              memory: "200Mi"
             requests:
-              cpu: 10m
-              memory: 20Mi
+              cpu: "10m"
+              memory: "20Mi"
       volumes:
         - name: socket-dir
           emptyDir: {}
