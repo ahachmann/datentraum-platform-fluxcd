@@ -8,7 +8,7 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: iam
-  namespace: vanille-shop-flux
+  namespace: flux-system
 spec:
   interval: 10m0s
   targetNamespace: iam
@@ -16,7 +16,7 @@ spec:
   prune: true
   sourceRef:
     kind: GitRepository
-    name: datentraum-platform-fluxcd
+    name: flux-system
   postBuild:
     substitute:
       DOMAIN: iam.vanille.hamburg
