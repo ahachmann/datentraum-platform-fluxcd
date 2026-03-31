@@ -4,10 +4,10 @@ metadata:
   name: base
 resources:
   - security
-  - operator
-  - monitoring
   - networking/dns-manager
-  - storage/manual-pv
-  - storage/nfs-provisioner
+#  - operator
+  - monitoring
+#  - storage/manual-pv
+#  - storage/nfs-provisioner
 
 
