@@ -313,7 +313,7 @@ prometheus:
     ##
      volumeClaimTemplate:
        spec:
-         storageClassName: TO-BE-REPLACED
+         storageClassName: hcloud-volumes
          accessModes: ["ReadWriteOnce"]
          resources:
            requests:

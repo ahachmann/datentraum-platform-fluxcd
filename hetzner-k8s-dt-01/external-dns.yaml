@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../base/networking/dns-manager
+patches:
+  - target:
+      kind: OnePasswordItem
+      name: hetzner-credentials
+      namespace: external-dns
+    patch: |-
+      - op: replace
+        path: /spec/itemPath
+        value: "vaults/DT-Infra/items/hetzner-dns-token"
