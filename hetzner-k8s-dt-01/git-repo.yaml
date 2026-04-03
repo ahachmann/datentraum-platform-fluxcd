@@ -1,0 +1,21 @@
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: vs-deploy-ssh-key
+  namespace: vanille-shop-flux
+spec:
+  itemPath: "vaults/VS-Infra/items/VS GitHub Deploy SSH-Key"  
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: datentraum-platform-fluxcd
+  namespace: vanille-shop-flux
+spec:
+  interval: 1m0s
+  ref:
+    branch: main
+  secretRef:
+    name: vs-deploy-ssh-key
+  url: ssh://git@github.com/ahachmann/datentraum-platform-fluxcd.git
