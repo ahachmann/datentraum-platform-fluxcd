@@ -3,22 +3,22 @@ kind: Kustomization
 resources:
 #  - git-repo.yaml
   - ../base/security/cert-manager
-#  - ../base/networking/dns-manager
+  - ../base/networking/dns-manager
 #  - ../base/monitoring/prometheus-stack
 #  - ../base/operator/cnpg
 #  - pg-cluster-01.yaml
 #  - iam.yaml
 #  - nextcloud.yaml
 #  - vanille-shop-test.yaml
-# patches:
-#   - target:
-#       kind: OnePasswordItem
-#       name: hetzner-credentials
-#       namespace: external-dns
-#     patch: |-
-#       - op: replace
-#         path: /spec/itemPath
-#         value: "vaults/VS-Infra/items/hetzner-api-key"
+patches:
+  - target:
+      kind: OnePasswordItem
+      name: hetzner-credentials
+      namespace: external-dns
+    patch: |-
+      - op: replace
+        path: /spec/itemPath
+        value: "vaults/DT-Infra/items/hetzner-dns-token"
 #   - target:
 #       kind: StorageClass
 #       name: storagebox-test-smb-sc
