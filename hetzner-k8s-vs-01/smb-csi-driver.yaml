@@ -4,6 +4,18 @@ kind: Namespace
 metadata:
   name: smb-csi-driver
 ---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-requests
+  namespace: smb-csi-driver
+spec:
+  limits:
+  - type: Container
+    defaultRequest:
+      cpu: "50m"
+      memory: "64Mi"
+---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:

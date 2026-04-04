@@ -4,6 +4,18 @@ kind: Namespace
 metadata:
   name: nfs-provisioner
 ---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-requests
+  namespace: nfs-provisioner
+spec:
+  limits:
+  - type: Container
+    defaultRequest:
+      cpu: "50m"
+      memory: "64Mi"
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:

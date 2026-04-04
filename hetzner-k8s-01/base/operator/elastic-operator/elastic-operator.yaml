@@ -4,6 +4,18 @@ kind: Namespace
 metadata:
   name: elastic-system
 ---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-requests
+  namespace: elastic-system
+spec:
+  limits:
+  - type: Container
+    defaultRequest:
+      cpu: "50m"
+      memory: "64Mi"
+---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:

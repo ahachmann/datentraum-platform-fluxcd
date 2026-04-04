@@ -13,6 +13,18 @@ kind: Namespace
 metadata:
   name: external-dns
 ---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-requests
+  namespace: external-dns
+spec:
+  limits:
+  - type: Container
+    defaultRequest:
+      cpu: "50m"
+      memory: "64Mi"
+---
 apiVersion: onepassword.com/v1
 kind: OnePasswordItem
 metadata:
