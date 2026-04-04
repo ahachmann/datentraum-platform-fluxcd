@@ -2,11 +2,10 @@ loglevel: info
 
 opencost:
   nodeNameMapping:
-    "10.1.0.103": "k3s-agent-small-jxa"
-    "10.1.0.101": "k3s-agent-small-nhj"
-    "10.1.0.104": "k3s-agent-small-nll"
-    "10.1.0.102": "k3s-agent-small-qmf"
-    "10.255.0.101": "k3s-control-plane-fsn1-meq"
+    "10.17.0.103": "datentraum-agent-large-sed"
+    "10.17.0.101": "datentraum-agent-large-iqm"
+    "10.17.0.102": "datentraum-agent-large-iie"
+    "10.31.240.101": "datentraum-control-plane-fsn1-ffk"
 
   loadBalancerCostEnabled: false
 
@@ -18,12 +17,12 @@ opencost:
     provider: custom
     costModel:
       description: "Hetzner on-prem pricing"
-      CPU: "0.00161"       # €0.00161 per CPU hour
-      spotCPU: "0.00161"   # Same as CPU (no spot instances)
-      RAM: "0.00054"       # €0.00054 per GB RAM hour
-      spotRAM: "0.00054"   # Same as RAM
+      CPU: "0.001322"       # €0.00161 per CPU hour
+      spotCPU: "0.001322"   # Same as CPU (no spot instances)
+      RAM: "0.000661"       # €0.00054 per GB RAM hour
+      spotRAM: "0.000661"   # Same as RAM
       GPU: "0"
-      storage: "0.00006849315068"
+      storage: "0.000015"
       zoneNetworkEgress: "0"
       regionNetworkEgress: "0"
       internetNetworkEgress: "0"
