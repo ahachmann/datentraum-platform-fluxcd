@@ -1,16 +1,21 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: pricing-configs
+  name: custom-pricing-model
   namespace: opencost
 data:
-  Pricing.json: |
+  default.json: |
     {
-      "nodes": [
-        {"name": "k3s-agent-small-jxa", "nodeCostPerHour": 0.00537},
-        {"name": "k3s-agent-small-nhj", "nodeCostPerHour": 0.00537},
-        {"name": "k3s-agent-small-nll", "nodeCostPerHour": 0.00537},
-        {"name": "k3s-agent-small-qmf", "nodeCostPerHour": 0.00537},
-        {"name": "k3s-control-plane-fsn1-meq", "nodeCostPerHour": 0.00537}
-      ]
+        "provider": "custom",
+        "description": "Hetzner on-prem pricing",
+        "CPU": "0.001322",
+        "spotCPU": "0.001322",
+        "RAM": "0.000661",
+        "spotRAM": "0.000661",
+        "GPU": "0",
+        "storage": "0.000015",
+        "zoneNetworkEgress": "0",
+        "regionNetworkEgress": "0",
+        "internetNetworkEgress": "0",
+        "loadBalancer": ""
     }

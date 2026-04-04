@@ -6,7 +6,11 @@ opencost:
     "10.17.0.101": "datentraum-agent-large-iqm"
     "10.17.0.102": "datentraum-agent-large-iie"
     "10.31.240.101": "datentraum-control-plane-fsn1-ffk"
-
+  metrics:
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: kube-prometheus-stack 
   loadBalancerCostEnabled: false
 
   mcp:
