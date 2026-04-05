@@ -1,0 +1,216 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    checksum/configs: f530cb23c675ddf4c1be75a944442fce3bc01bf327d4b99d588e73cbb8d28d1d
+    deployment.kubernetes.io/revision: "10"
+    meta.helm.sh/release-name: open-cost
+    meta.helm.sh/release-namespace: open-cost
+  creationTimestamp: "2026-04-04T10:19:51Z"
+  generation: 19
+  labels:
+    app.kubernetes.io/instance: open-cost
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: opencost
+    app.kubernetes.io/part-of: opencost
+    app.kubernetes.io/version: 1.119.2
+    helm.sh/chart: opencost-2.5.12
+    helm.toolkit.fluxcd.io/name: open-cost
+    helm.toolkit.fluxcd.io/namespace: open-cost
+  name: open-cost-opencost
+  namespace: open-cost
+  resourceVersion: "432921"
+  uid: 92bb7cab-78ae-4ed9-b107-24d0c688cd7f
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: open-cost
+      app.kubernetes.io/name: opencost
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/restartedAt: "2026-04-04T19:15:18+02:00"
+      labels:
+        app.kubernetes.io/instance: open-cost
+        app.kubernetes.io/name: opencost
+    spec:
+      automountServiceAccountToken: true
+      containers:
+      - env:
+        - name: LOG_LEVEL
+          value: info
+        - name: CUSTOM_COST_ENABLED
+          value: "false"
+        - name: INSTALL_NAMESPACE
+          value: open-cost
+        - name: PROMETHEUS_QUERY_RESOLUTION_SECONDS
+          value: "300"
+        - name: API_PORT
+          value: "9003"
+        - name: PROMETHEUS_SERVER_ENDPOINT
+          value: http://kube-prometheus-stack-prometheus.monitoring:9090
+        - name: INSECURE_SKIP_VERIFY
+          value: "false"
+        - name: CLUSTER_ID
+          value: default-cluster
+        - name: CONFIG_PATH
+          value: /tmp/custom-config
+        - name: PRICING_CONFIGMAP_NAME
+          value: custom-pricing-model
+        - name: RESOLUTION_1D_RETENTION
+          value: "15"
+        - name: RESOLUTION_1H_RETENTION
+          value: "49"
+        - name: CLOUD_COST_ENABLED
+          value: "false"
+        - name: CLOUD_COST_MONTH_TO_DATE_INTERVAL
+          value: "6"
+        - name: CLOUD_COST_REFRESH_RATE_HOURS
+          value: "6"
+        - name: CLOUD_COST_QUERY_WINDOW_DAYS
+          value: "7"
+        - name: CLOUD_COST_RUN_WINDOW_DAYS
+          value: "3"
+        - name: MCP_SERVER_ENABLED
+          value: "false"
+        image: ghcr.io/opencost/opencost:1.119.2@sha256:4b8de6e029b9dc1f7e68bdf1cf02fca7649614c23812e51a63820f113ca97b89
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: 9003
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: open-cost-opencost
+        ports:
+        - containerPort: 9003
+          name: http
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: 9003
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources:
+          limits:
+            memory: 1Gi
+          requests:
+            cpu: 10m
+            memory: 55Mi
+        startupProbe:
+          failureThreshold: 30
+          httpGet:
+            path: /healthz
+            port: 9003
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 1
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /tmp/custom-config
+          name: custom-configs
+      - env:
+        - name: API_PORT
+          value: "9003"
+        - name: UI_PORT
+          value: "9090"
+        image: ghcr.io/opencost/opencost-ui:1.119.2@sha256:0dba1a93db7ae88e956556caf9a9240879d7fcb1d5a7cb9fec0b83970c0ce50c
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: 9090
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: opencost-ui
+        ports:
+        - containerPort: 9090
+          name: http-ui
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: 9090
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources:
+          limits:
+            memory: 1Gi
+          requests:
+            cpu: 10m
+            memory: 55Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/nginx/conf.d/default.nginx.conf
+          name: opencost-ui-nginx-config-volume
+          subPath: default.nginx.conf
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: open-cost-opencost
+      serviceAccountName: open-cost-opencost
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: default.json
+            path: default.json
+          name: pricing-model
+        name: custom-configs
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: nginx.conf
+            path: default.nginx.conf
+          name: opencost-ui-nginx-config
+        name: opencost-ui-nginx-config-volume
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2026-04-04T10:19:51Z"
+    lastUpdateTime: "2026-04-04T10:19:51Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2026-04-04T10:19:51Z"
+    lastUpdateTime: "2026-04-04T17:34:17Z"
+    message: ReplicaSet "open-cost-opencost-7b68767498" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 19
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1
