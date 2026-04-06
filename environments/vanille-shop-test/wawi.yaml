@@ -17,7 +17,7 @@ spec:
       VS_ENVIRONMENT: "test"
       TARGET_NAMESPACE: "vanille-shop-test"
       FLUX_NAMESPACE: "vanille-shop-flux"
-      STORAGE_CLASS_NAME: "storagebox-test-smb-sc"
+      STORAGE_CLASS_NAME: "hcloud-volumes"
       PVC_STORAGE_SIZE: "10Gi"
       SHOP_WARE_API_URL: "https://www.vanille-shop.de/stageware1/api/"
       SHOP_WARE_API_AUTHORIZATION_URL: "https://www.vanille-shop.de/stageware1/api/oauth/token"
