@@ -1,4 +1,4 @@
-replicaCount: 3
+replicaCount: 1
 
 ingress:
   enabled: true
@@ -60,7 +60,7 @@ autoscaling:
 
 collabora:
    aliasgroups:
-      - host: "https://example.integrator.com:443"
+      - host: "https://cloud.hachmann.hamburg:443"
    extra_params: >
       --o:ssl.enable=false
       --o:ssl.termination=true
@@ -68,8 +68,8 @@ collabora:
 
 resources:
    limits:
-      cpu: "3000m"
-      memory: "4000Mi"
-   requests:
       cpu: "2000m"
-      memory: "3000Mi"
+      memory: "2000Mi"
+   requests:
+      cpu: "1000m"
+      memory: "1500Mi"
