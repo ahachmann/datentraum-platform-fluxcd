@@ -1,0 +1,39 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cvo-elternrat-cloud
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-requests
+  namespace: cvo-elternrat-cloud
+spec:
+  limits:
+  - type: Container
+    defaultRequest:
+      cpu: "50m"
+      memory: "64Mi"
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cvo-elternrat-cloud
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  targetNamespace: ${TARGET_NAMESPACE}
+  path: ./applications/collabora
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  postBuild:
+    substitute:
+      FLUX_NAMESPACE: flux-system
+      TARGET_NAMESPACE: cvo-elternrat-cloud
+      TLS_SECRET_NAME: nextcloud-general-tls
+      DOMAIN: code.hachmann.hamburg
+      CLUSTER_ISSUER: letsencrypt-staging
+      STORAGE_CLASS_NAME: hcloud-volumes

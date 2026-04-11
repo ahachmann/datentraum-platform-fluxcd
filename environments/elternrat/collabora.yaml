@@ -1,0 +1,22 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cvo-elternrat-cloud
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  targetNamespace: ${TARGET_NAMESPACE}
+  path: ./applications/collabora
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  postBuild:
+    substitute:
+      FLUX_NAMESPACE: ${FLUX_NAMESPACE}
+      TARGET_NAMESPACE: cvo-elternrat-cloud
+      TLS_SECRET_NAME: nextcloud-general-tls
+      DOMAIN: code.${DOMAIN}
+      CLUSTER_ISSUER: ${CLUSTER_ISSUER}
+      STORAGE_CLASS_NAME: ${STORAGE_CLASS_NAME}

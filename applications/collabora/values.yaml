@@ -1,0 +1,75 @@
+replicaCount: 3
+
+ingress:
+  enabled: true
+  className: "traefik"
+  annotations:
+    cert-manager.io/cluster-issuer: ${CLUSTER_ISSUER}
+    # nginx.ingress.kubernetes.io/enable-access-log: "true"
+    # nginx.ingress.kubernetes.io/upstream-hash-by: "$arg_WOPISrc"
+    # nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    # nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    # nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+  hosts:
+    - host: ${DOMAIN}
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: ${TLS_SECRET_NAME}
+      hosts:
+        - ${DOMAIN}
+
+# Ingress settings for HAproxy Ingress Controller by HAproxy Technologies
+# ingress:
+#    enabled: true
+#    className: "haproxy"
+#    annotations:
+#        haproxy.org/timeout-tunnel: "3600s"
+#        haproxy.org/backend-config-snippet: |
+#          balance url_param WOPISrc check_post
+#    hosts:
+#        - host: test.collabora.online
+#          paths:
+#          - path: /
+#            pathType: Prefix
+#    tls:
+#    - secretName: tls-secret-name
+#      hosts:
+#        - test.collabora.online
+
+# Ingress settings for HAproxy Ingress Controller by HAproxy Technologies
+# ingress:
+#    enabled: true
+#    className: "haproxy"
+#    annotations:
+#        haproxy-ingress.github.io/timeout-tunnel: 3600s
+#        haproxy-ingress.github.io/balance-algorithm: url_param WOPISrc check_post
+#    hosts:
+#        - host: test.collabora.online
+#          paths:
+#          - path: /
+#            pathType: Prefix
+#    tls:
+#    - secretName: tls-secret-name
+#      hosts:
+#        - test.collabora.online
+
+autoscaling:
+   enabled: false
+
+collabora:
+   aliasgroups:
+      - host: "https://example.integrator.com:443"
+   extra_params: >
+      --o:ssl.enable=false
+      --o:ssl.termination=true
+      --o:num_prespawn_children=4
+
+resources:
+   limits:
+      cpu: "4000m"
+      memory: "8000Mi"
+   requests:
+      cpu: "4000m"
+      memory: "6000Mi"
