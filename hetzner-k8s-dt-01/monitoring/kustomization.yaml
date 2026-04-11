@@ -20,6 +20,8 @@ patches:
         path: /spec/values
         value:
           grafana:
+            operator:
+              dashboardsConfigMapRefEnabled: false
             admin:
               ## Name of the secret. Can be templated.
               existingSecret: "grafana-admin-credentials"
