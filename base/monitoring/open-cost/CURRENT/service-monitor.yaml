@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  generation: 1
+  labels:
+    release: kube-prometheus-stack
+  name: open-cost-opencost
+  namespace: open-cost
+spec:
+  endpoints:
+    - honorLabels: true
+      interval: 30s
+      path: /metrics
+      port: http
+      scheme: http
+      scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+      - open-cost
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: open-cost
+      app.kubernetes.io/name: opencost

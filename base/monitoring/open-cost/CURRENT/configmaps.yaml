@@ -14,7 +14,7 @@ data:
       "RAM": "0.000441",
       "spotRAM": "0.000441",
       "GPU": "0",
-      "storage": "0,0000932,
+      "storage": "0.0000932",
       "zoneNetworkEgress": "0",
       "regionNetworkEgress": "0",
       "internetNetworkEgress": "0"

@@ -1,21 +1,20 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: custom-pricing-model
+  name: pricing-model
   namespace: opencost
 data:
   default.json: |
     {
-        "provider": "custom",
-        "description": "Hetzner on-prem pricing",
-        "CPU": "0.001322",
-        "spotCPU": "0.001322",
-        "RAM": "0.000661",
-        "spotRAM": "0.000661",
-        "GPU": "0",
-        "storage": "0.000015",
-        "zoneNetworkEgress": "0",
-        "regionNetworkEgress": "0",
-        "internetNetworkEgress": "0",
-        "loadBalancer": ""
+      "provider": "custom",
+      "description": "Hetzner on-prem pricing",
+      "CPU": "0.001763",
+      "spotCPU": "0.001763",
+      "RAM": "0.000441",
+      "spotRAM": "0.000441",
+      "GPU": "0",
+      "storage": "0.0000932",
+      "zoneNetworkEgress": "0",
+      "regionNetworkEgress": "0",
+      "internetNetworkEgress": "0"
     }

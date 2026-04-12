@@ -1,30 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    checksum/configs: f530cb23c675ddf4c1be75a944442fce3bc01bf327d4b99d588e73cbb8d28d1d
-    deployment.kubernetes.io/revision: "10"
-    meta.helm.sh/release-name: open-cost
-    meta.helm.sh/release-namespace: open-cost
-  creationTimestamp: "2026-04-04T10:19:51Z"
-  generation: 19
-  labels:
-    app.kubernetes.io/instance: open-cost
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: opencost
-    app.kubernetes.io/part-of: opencost
-    app.kubernetes.io/version: 1.119.2
-    helm.sh/chart: opencost-2.5.12
-    helm.toolkit.fluxcd.io/name: open-cost
-    helm.toolkit.fluxcd.io/namespace: open-cost
   name: open-cost-opencost
   namespace: open-cost
-  resourceVersion: "432921"
-  uid: 92bb7cab-78ae-4ed9-b107-24d0c688cd7f
 spec:
-  progressDeadlineSeconds: 600
   replicas: 1
-  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app.kubernetes.io/instance: open-cost
@@ -36,8 +16,6 @@ spec:
     type: RollingUpdate
   template:
     metadata:
-      annotations:
-        kubectl.kubernetes.io/restartedAt: "2026-04-04T19:15:18+02:00"
       labels:
         app.kubernetes.io/instance: open-cost
         app.kubernetes.io/name: opencost
@@ -64,7 +42,7 @@ spec:
         - name: CONFIG_PATH
           value: /tmp/custom-config
         - name: PRICING_CONFIGMAP_NAME
-          value: custom-pricing-model
+          value: ""
         - name: RESOLUTION_1D_RETENTION
           value: "15"
         - name: RESOLUTION_1H_RETENTION
@@ -195,22 +173,4 @@ spec:
             path: default.nginx.conf
           name: opencost-ui-nginx-config
         name: opencost-ui-nginx-config-volume
-status:
-  availableReplicas: 1
-  conditions:
-  - lastTransitionTime: "2026-04-04T10:19:51Z"
-    lastUpdateTime: "2026-04-04T10:19:51Z"
-    message: Deployment has minimum availability.
-    reason: MinimumReplicasAvailable
-    status: "True"
-    type: Available
-  - lastTransitionTime: "2026-04-04T10:19:51Z"
-    lastUpdateTime: "2026-04-04T17:34:17Z"
-    message: ReplicaSet "open-cost-opencost-7b68767498" has successfully progressed.
-    reason: NewReplicaSetAvailable
-    status: "True"
-    type: Progressing
-  observedGeneration: 19
-  readyReplicas: 1
-  replicas: 1
-  updatedReplicas: 1
+
