@@ -29,8 +29,8 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  # postBuild:
-  #   substitute:
-  #     DOMAIN: iam.vanille.hamburg
-  #     INGRESS: traefik
-  #     CLUSTER_ISSUER: letsencrypt-prod
+  postBuild:
+    substitute:
+      DOMAIN: "cloud-costs.vanille.hamburg"
+      INGRESS: "traefik"
+      CLUSTER_ISSUER: "letsencrypt-prod"
