@@ -8,4 +8,4 @@ resources:
   - deployment.yaml
   - service.yaml
   - ingress/ingress.yaml
-#  - ingress/traefik-middleware.yaml
+  - ingress/traefik-middleware.yaml

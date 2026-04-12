@@ -34,3 +34,24 @@ spec:
       DOMAIN: "cloud-costs.vanille.hamburg"
       INGRESS: "traefik"
       CLUSTER_ISSUER: "letsencrypt-prod"
+      TARGET_NAMESPACE: "open-cost"
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: oauth-open-cost
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  targetNamespace: open-cost
+  path: ./base/security/oauth2-proxy
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  postBuild:
+    substitute:
+      ISSUER: https://iam.vanille.hamburg/realms/VanilleShop
+      CLIENT_SECRET_ITEM_PATH: "vaults/VS-Infra/items/OAuth Client Secret"
+      DOMAIN: cloud-costs.vanille.hamburg
+      TLS_SECRET_NAME: "cloud-costs.vanille.hamburg-tls"
