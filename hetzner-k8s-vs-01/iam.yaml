@@ -34,3 +34,4 @@ spec:
       DOMAIN: iam.vanille.hamburg
       INGRESS: traefik
       CLUSTER_ISSUER: letsencrypt-prod
+      ADMIN_SECRET_ID: "vaults/VS-Infra/items/KeyCloak Database User"

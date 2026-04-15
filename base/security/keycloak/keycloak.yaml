@@ -4,7 +4,7 @@ kind: OnePasswordItem
 metadata:
   name: pg-keycloak-secret
 spec:
-  itemPath: "vaults/VS-Infra/items/KeyCloak Database User"
+  itemPath: ${ADMIN_SECRET_ID}
 ---
 apiVersion: v1
 kind: Service

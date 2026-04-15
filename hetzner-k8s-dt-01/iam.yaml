@@ -31,6 +31,7 @@ spec:
     name: flux-system
   postBuild:
     substitute:
-      DOMAIN: iam.vanille.hamburg
+      DOMAIN: iam.hachmann.hamburg
       INGRESS: traefik
       CLUSTER_ISSUER: letsencrypt-prod
+      ADMIN_SECRET_ID: "vaults/DT-Infra/items/KeyCloak Database User"
