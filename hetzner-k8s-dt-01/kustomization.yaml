@@ -5,4 +5,4 @@ resources:
   - external-dns
   - monitoring
   - open-cost.yaml
-  - elternrat.yaml
+#  - elternrat.yaml
