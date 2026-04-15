@@ -2,9 +2,16 @@
 apiVersion: onepassword.com/v1
 kind: OnePasswordItem
 metadata:
-  name: pg-keycloak-secret
+  name: keycloak-admin-secret
 spec:
   itemPath: ${ADMIN_SECRET_ID}
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: pg-keycloak-secret
+spec:
+  itemPath: ${DATABASE_SECRET_ID}
 ---
 apiVersion: v1
 kind: Service
