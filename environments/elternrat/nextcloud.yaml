@@ -28,12 +28,12 @@ spec:
   prune: true
   sourceRef:
     kind: GitRepository
-    name: datentraum-platform-fluxcd
+    name: flux-system
   postBuild:
     substitute:
-      FLUX_NAMESPACE: vanille-shop-flux
-      TARGET_NAMESPACE: vanille-shop-cloud
+      FLUX_NAMESPACE: flux-system
+      TARGET_NAMESPACE: cvo-elternrat-cloud
       TLS_SECRET_NAME: nextcloud-general-tls
-      DOMAIN: cloud.vanille.hamburg
+      DOMAIN: er.hachmann.hamburg
       CLUSTER_ISSUER: letsencrypt-staging
       STORAGE_CLASS_NAME: storagebox-test-smb-sc

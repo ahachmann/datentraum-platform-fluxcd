@@ -1,0 +1,21 @@
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: er-cvo-deploy-ssh-key
+  namespace: cvo-elternrat-cloud
+spec:
+  itemPath: "vaults/DT-Infra/items/CVO Elternrat DeployKey"  
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: datentraum-platform-fluxcd
+  namespace: cvo-elternrat-cloud
+spec:
+  interval: 1m0s
+  ref:
+    branch: main
+  secretRef:
+    name: er-cvo-deploy-ssh-key
+  url: ssh://git@github.com/ahachmann/datentraum-platform-fluxcd.git
