@@ -7,5 +7,5 @@ resources:
   - operators.yaml
   - pg-cluster-01.yaml
   - open-cost.yaml
-#  - iam.yaml
+  - iam.yaml
 #  - elternrat.yaml
