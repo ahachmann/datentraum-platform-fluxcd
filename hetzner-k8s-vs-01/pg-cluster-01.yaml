@@ -43,7 +43,7 @@ spec:
 apiVersion: onepassword.com/v1
 kind: OnePasswordItem
 metadata:
-  name: pg-wawi-secret
+  name: pg-wawi-test-secret
   namespace: pg-cluster
 spec:
   itemPath: "vaults/VS-Infra/items/Wawi VS Test"
@@ -125,7 +125,7 @@ spec:
                 ensure: present
                 createdb: false
                 passwordSecret:
-                  name: pg-wawi-secret
+                  name: pg-wawi-test-secret
               - name: keycloak
                 login: true
                 ensure: present
