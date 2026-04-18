@@ -24,6 +24,8 @@ spec:
   mountOptions:
     - dir_mode=0777
     - file_mode=0777
+    - uid=1001
+    - gid=1001
   csi:
     driver: smb.csi.k8s.io
     # volumeHandle format: {smb-server-address}#{sub-dir-name}#{share-name}
@@ -40,7 +42,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: smb-test-pod
-  namespace: default
+  namespace: vanille-shop-cloud
 spec:
   containers:
     - name: smb-test-container
@@ -66,3 +68,22 @@ spec:
     requests:
       storage: 10Gi
   storageClassName: smb 
+---
+# Deployment of a simple test pod to verify the functionality of the smb-csi-driver
+apiVersion: v1
+kind: Pod
+metadata:
+  name: smb-test-pod
+  namespace: vanille-shop-cloud
+spec:
+  containers:
+    - name: smb-test-container
+      image: busybox
+      command: ["/bin/sh", "-c", "sleep 3600"]
+      volumeMounts:
+        - name: smb-test-volume
+          mountPath: /mnt/smb
+  volumes:
+    - name: smb-test-volume
+      persistentVolumeClaim:
+        claimName: vanille-shop-nextcloud-nextcloud-data
