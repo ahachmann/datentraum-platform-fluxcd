@@ -4,7 +4,7 @@ metadata:
   name: vanille-shop-nextcloud
 resources:
   - secrets.yaml
-  - volumes.yaml
+#  - volumes.yaml
   - nextcloud.yaml
 configMapGenerator:
   - name: nextcloud-values

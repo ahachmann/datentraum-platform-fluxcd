@@ -63,7 +63,7 @@ lifecycle: {}
 #   preStopCommand: []
 
 phpClientHttpsFix:
-  enabled: false
+  enabled: true
   protocol: https
 
 nextcloud:
@@ -71,7 +71,7 @@ nextcloud:
   ## Use an existing secret
   existingSecret:
     enabled: true
-    secretName: vs-nextcloud-admin
+    secretName: dt-nextcloud-admin
     usernameKey: username
     passwordKey: password
     tokenKey: ""
@@ -106,7 +106,7 @@ nextcloud:
     # https://docs.nextcloud.com/server/latest/admin_manual/configuration_files/primary_storage.html#simple-storage-service-s3
     s3:
       enabled: false
-      # existingSecret: "vs-nextcloud-s3"
+      # existingSecret: "dt-nextcloud-s3"
       secretKeys:
         # key in nextcloud.objectStore.s3.existingSecret to use for s3 endpoint
         host: "URL"
@@ -397,7 +397,7 @@ collabora:
 ## ref: https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/background_jobs_configuration.html#cron
 ##
 cronjob:
-  enabled: false
+  enabled: true
 
   # Either 'sidecar' or 'cronjob'
   type: sidecar
@@ -525,7 +525,7 @@ persistence:
   # existingClaim: vs-nextcloud-www-pvc
 
   accessMode: ReadWriteOnce
-  size: 10Gi
+  size: 20Gi
 
   # -- If defined, use a hostPath volume for nextcloud data rather than a dynamically defined PVC.
   hostPath:
@@ -533,7 +533,7 @@ persistence:
   ## Use an additional pvc for the data directory rather than a subpath of the default PVC
   ## Useful to store data on a different storageClass (e.g. on slower disks)
   nextcloudData:
-    enabled: true
+    enabled: false
     # -- If defined, use a hostPath volume for nextcloud data rather than a dynamically defined PVC.
     labels: {}
     annotations: {}
