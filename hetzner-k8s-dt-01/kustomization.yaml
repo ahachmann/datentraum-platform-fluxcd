@@ -4,6 +4,8 @@ resources:
   - cert-manager
   - external-dns
   - monitoring
+  - operators.yaml
+  - pg-cluster-01.yaml
   - open-cost.yaml
 #  - iam.yaml
 #  - elternrat.yaml

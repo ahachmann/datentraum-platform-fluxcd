@@ -1,0 +1,159 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pg-cluster
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-requests
+  namespace: pg-cluster
+spec:
+  limits:
+  - type: Container
+    defaultRequest:
+      cpu: "50m"
+      memory: "64Mi"
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: pg-backup-s3-key-secret
+  namespace: pg-cluster
+spec:
+  itemPath: "vaults/DT-Infra/items/PG Backup S3 Secrets"
+--- 
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: pg-superuser-secret
+  namespace: pg-cluster
+spec:
+  itemPath: "vaults/DT-Infra/items/DT Postgres Superuser"
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: pg-keycloak-secret
+  namespace: pg-cluster
+spec:
+  itemPath: "vaults/DT-Infra/items/KeyCloak Database User"
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: pg-nextcloud-secret
+  namespace: pg-cluster
+spec:
+  itemPath: "vaults/DT-Infra/items/Nextcloud Datenbank"
+---
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: hetzner-s3-store
+  namespace: pg-cluster
+spec:
+  configuration:  
+    destinationPath: s3://wh-gmbh-pg-backup/alex-db-20260416
+    endpointURL: https://fsn1.your-objectstorage.com
+    s3Credentials:
+      accessKeyId:
+        name: pg-backup-s3-key-secret
+        key: AccessKey
+      secretAccessKey:
+        name: pg-backup-s3-key-secret
+        key: SecretKey
+    wal:
+      compression: gzip
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: pg-cluster
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: operators
+  targetNamespace: pg-cluster
+  interval: 10m0s
+  path: ./base/pg-clusters
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  patches:
+    - patch: |-
+        - op: replace
+          path: /spec/plugins
+          value:
+            - name: barman-cloud.cloudnative-pg.io
+              isWALArchiver: true
+              parameters:
+                barmanObjectName: hetzner-s3-store
+        - op: replace
+          path: /spec/managed
+          value:
+            roles:
+              - name: keycloak
+                login: true
+                ensure: present
+                createdb: false
+                passwordSecret:
+                  name: pg-keycloak-secret
+              - name: nextcloud
+                login: true
+                ensure: present
+                createdb: false
+                passwordSecret:
+                  name: pg-nextcloud-secret
+      target:
+        kind: Cluster
+        name: pg-cluster-01
+        namespace: pg-cluster
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: keycloak-database
+  namespace: pg-cluster
+spec:
+  name: keycloak
+  owner: keycloak
+  cluster:
+    name: pg-cluster-01
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: nextcloud-database
+  namespace: pg-cluster
+spec:
+  name: nextcloud
+  owner: nextcloud
+  cluster:
+    name: pg-cluster-01
+
+# - op: replace
+#   path: /spec/managed
+#   value:
+#     roles:
+#       - name: immich-user
+#         login: true
+#         ensure: present
+#         createdb: false
+#         passwordSecret:
+#           name: immich-user-secret
+#       - name: schwarze-null-user
+#         login: true
+#         ensure: present
+#         createdb: false
+#         passwordSecret:
+#           name: schwarze-null-user-secret
+#       - name: vs-user
+#         login: true
+#         ensure: present
+#         createdb: false
+#         passwordSecret:
+#           name: vs-user-secret
+  
