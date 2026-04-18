@@ -8,4 +8,4 @@ resources:
   - pg-cluster-01.yaml
   - open-cost.yaml
   - iam.yaml
-#  - elternrat.yaml
+  - elternrat
