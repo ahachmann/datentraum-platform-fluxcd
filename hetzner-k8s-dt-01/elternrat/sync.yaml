@@ -19,3 +19,18 @@ spec:
   secretRef:
     name: er-cvo-deploy-ssh-key
   url: ssh://git@github.com/ahachmann/datentraum-platform-fluxcd.git
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: elternrat-fluxcd
+  namespace: cvo-elternrat-cloud
+spec:
+  serviceAccountName: elternrat-flux-sa
+  targetNamespace: cvo-elternrat-cloud
+  interval: 10m0s
+  path: ./environments/elternrat
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: datentraum-platform-fluxcd
