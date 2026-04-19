@@ -40,3 +40,6 @@ patches:
                 - secretName: grafana-general-tls
                   hosts:
                     - grafana.datentraum.de
+            alertmanager:
+              enabled: true
+
