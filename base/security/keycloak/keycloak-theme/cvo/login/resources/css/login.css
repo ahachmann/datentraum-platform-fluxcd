@@ -1,0 +1,289 @@
+/* CVO Keycloak Theme - Carl von Ossietzky Gymnasium */
+
+:root {
+  --cvo-blue: #1e4b74;
+  --cvo-blue-dark: #163a5c;
+  --cvo-blue-light: #d9dde2;
+  --cvo-orange: #c8602a;
+  --cvo-bg: #d9dde2;
+  --cvo-white: #ffffff;
+  --cvo-border: #b8bec6;
+  --cvo-text: #111827;
+  --cvo-text-muted: #6b7280;
+  --cvo-text-secondary: #374151;
+  --cvo-input-bg: #f9fafb;
+  --cvo-radius: 8px;
+  --cvo-radius-panel: 12px;
+}
+
+/* ── Page & Body ── */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  background-color: var(--cvo-bg);
+  color: var(--cvo-text);
+}
+
+.login-pf-page {
+  background-color: var(--cvo-bg);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+/* ── Panel ── */
+#kc-form-wrapper,
+.card-pf,
+.login-pf-accounts {
+  background: var(--cvo-white);
+  border-radius: var(--cvo-radius-panel);
+  border: 0.5px solid var(--cvo-border);
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem 2rem 1.75rem;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+/* ── Logo area ── */
+#kc-header,
+.login-pf-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+#kc-header-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-pf-header img,
+#kc-header img {
+  height: 90px;
+  width: auto;
+  margin-bottom: 0.75rem;
+}
+
+/* Org name / realm display name */
+#kc-header-wrapper .kc-logo-subtitle,
+.login-pf-header h1,
+.login-pf-header .pf-c-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--cvo-blue);
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+/* ── Divider / subtitle ── */
+#kc-page-title,
+.subtitle {
+  font-size: 14px;
+  color: var(--cvo-text-muted);
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 0.5px solid #d1d5db;
+}
+
+/* ── Form fields ── */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label,
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--cvo-text-secondary);
+  margin-bottom: 4px;
+}
+
+.form-control,
+input[type="text"],
+input[type="password"],
+input[type="email"] {
+  width: 100%;
+  height: 38px;
+  border: 0.5px solid var(--cvo-border);
+  border-radius: var(--cvo-radius);
+  padding: 0 12px;
+  font-size: 14px;
+  color: var(--cvo-text);
+  background: var(--cvo-input-bg);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.form-control:focus,
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus {
+  border-color: var(--cvo-blue);
+  background: var(--cvo-white);
+  box-shadow: 0 0 0 3px rgba(30, 75, 116, 0.12);
+}
+
+/* ── Forgot password link ── */
+#kc-info-message,
+.login-pf-accounts .forgot-pw,
+a#forgot-password,
+.pf-c-form__helper-text a {
+  display: block;
+  text-align: right;
+  font-size: 12px;
+  color: var(--cvo-blue);
+  margin-top: -4px;
+  margin-bottom: 1.25rem;
+  text-decoration: none;
+}
+
+a#forgot-password:hover {
+  text-decoration: underline;
+}
+
+/* ── Submit button ── */
+#kc-login,
+.btn-primary,
+input[type="submit"],
+button[type="submit"] {
+  width: 100%;
+  height: 40px;
+  background: var(--cvo-blue);
+  color: var(--cvo-white);
+  border: none;
+  border-radius: var(--cvo-radius);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  box-sizing: border-box;
+}
+
+#kc-login:hover,
+.btn-primary:hover,
+input[type="submit"]:hover,
+button[type="submit"]:hover {
+  background: var(--cvo-blue-dark);
+}
+
+/* ── Alerts / errors ── */
+.alert-error,
+.pf-m-danger {
+  background: #fef2f2;
+  border: 0.5px solid #fca5a5;
+  border-radius: var(--cvo-radius);
+  color: #991b1b;
+  font-size: 13px;
+  padding: 10px 14px;
+  margin-bottom: 1rem;
+}
+
+.alert-success,
+.pf-m-success {
+  background: #f0fdf4;
+  border: 0.5px solid #86efac;
+  border-radius: var(--cvo-radius);
+  color: #166534;
+  font-size: 13px;
+  padding: 10px 14px;
+  margin-bottom: 1rem;
+}
+
+.alert-warning {
+  background: #fffbeb;
+  border: 0.5px solid #fcd34d;
+  border-radius: var(--cvo-radius);
+  color: #92400e;
+  font-size: 13px;
+  padding: 10px 14px;
+  margin-bottom: 1rem;
+}
+
+/* ── Footer ── */
+#kc-info,
+.login-pf-footer,
+.login-pf-signup {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.kc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 6px;
+}
+
+.kc-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cvo-blue);
+  opacity: 0.5;
+  display: inline-block;
+}
+
+/* ── Remember me checkbox ── */
+.checkbox label {
+  font-size: 13px;
+  color: var(--cvo-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Social/IDP buttons (falls später benötigt) ── */
+.social-section {
+  margin-top: 1rem;
+  border-top: 0.5px solid #d1d5db;
+  padding-top: 1rem;
+}
+
+.zocial,
+.pf-c-button.pf-m-control {
+  width: 100%;
+  border: 0.5px solid var(--cvo-border);
+  border-radius: var(--cvo-radius);
+  background: var(--cvo-white);
+  color: var(--cvo-text);
+  font-size: 13px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-bottom: 6px;
+}
+
+.zocial:hover {
+  background: var(--cvo-input-bg);
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  #kc-form-wrapper,
+  .card-pf {
+    padding: 1.5rem 1.25rem;
+    border-radius: 8px;
+    margin: 0;
+  }
+
+  .login-pf-page {
+    align-items: flex-start;
+    padding: 1rem;
+  }
+}

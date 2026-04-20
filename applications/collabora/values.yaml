@@ -61,6 +61,7 @@ autoscaling:
 collabora:
    aliasgroups:
       - host: "https://cloud.hachmann.hamburg:443"
+      - host: "https://cloud.cvo-elternrat.de:443"
    extra_params: >
       --o:ssl.enable=false
       --o:ssl.termination=true

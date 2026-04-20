@@ -37,6 +37,22 @@ spec:
       DATABASE_SECRET_ID: "vaults/DT-Infra/items/KeyCloak Database User"
       ADMIN_SECRET_ID: "vaults/DT-Infra/items/KeyCloak Admin (Hachmann)"
 ---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: iam-theme
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  targetNamespace: iam
+  path: ./base/security/keycloak/keycloak-theme
+  prune: true
+  dependsOn:
+    - name: iam
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+---
 kind: Ingress
 apiVersion: networking.k8s.io/v1
 metadata:

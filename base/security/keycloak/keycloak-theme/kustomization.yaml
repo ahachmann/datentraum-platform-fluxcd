@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - keycloak-theme-img-configmap.yaml
+configMapGenerator:
+  - name: kc-theme-cvo-login
+    options:
+      disableNameSuffixHash: true
+    files:
+      - login.ftl=cvo/login/login.ftl
+      - template.ftl=cvo/login/template.ftl
+      - theme.properties=cvo/login/theme.properties
+  - name: kc-theme-cvo-messages
+    options:
+      disableNameSuffixHash: true
+    files:
+      - messages_de.properties=cvo/login/messages/messages_de.properties
+      - messages_en.properties=cvo/login/messages/messages_en.properties
+  - name: kc-theme-cvo-css
+    options:
+      disableNameSuffixHash: true
+    files:
+      - login.css=cvo/login/resources/css/login.css
