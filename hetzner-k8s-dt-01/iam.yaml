@@ -34,8 +34,8 @@ spec:
       DOMAIN: iam.hachmann.hamburg
       INGRESS: traefik
       CLUSTER_ISSUER: letsencrypt-prod
-      DATABASE_SECRET_ID: "vaults/DT-Infra/items/KeyCloak Admin (Hachmann)"
-      ADMIN_SECRET_ID: "vaults/DT-Infra/items/KeyCloak Database User"
+      DATABASE_SECRET_ID: "vaults/DT-Infra/items/KeyCloak Database User"
+      ADMIN_SECRET_ID: "vaults/DT-Infra/items/KeyCloak Admin (Hachmann)"
 ---
 kind: Ingress
 apiVersion: networking.k8s.io/v1
