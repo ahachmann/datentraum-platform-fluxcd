@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: datentraum
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-requests
+  namespace: datentraum
+spec:
+  limits:
+  - type: Container
+    defaultRequest:
+      cpu: "50m"
+      memory: "64Mi"

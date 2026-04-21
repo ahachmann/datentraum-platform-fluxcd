@@ -2,8 +2,8 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: cvo-elternrat-collabora
-  namespace: cvo-elternrat-cloud
+  name: datentraum-collabora
+  namespace: datentraum
 spec:
   interval: 10m0s
   targetNamespace: ${TARGET_NAMESPACE}
@@ -14,8 +14,8 @@ spec:
     name: datentraum-platform-fluxcd
   postBuild:
     substitute:
-      TARGET_NAMESPACE: cvo-elternrat-cloud
+      TARGET_NAMESPACE: datentraum
       TLS_SECRET_NAME: collabora-nextcloud-general-tls
-      DOMAIN: code.cvo-elternrat.de
+      DOMAIN: code.datentraum.de
       CLUSTER_ISSUER: letsencrypt-prod
       

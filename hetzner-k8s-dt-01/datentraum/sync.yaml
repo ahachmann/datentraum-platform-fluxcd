@@ -1,0 +1,36 @@
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: datentraum-deploy-ssh-key
+  namespace: datentraum
+spec:
+  itemPath: "vaults/DT-Infra/items/CVO Elternrat DeployKey"  
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: datentraum-platform-fluxcd
+  namespace: datentraum
+spec:
+  interval: 1m0s
+  ref:
+    branch: main
+  secretRef:
+    name: datentraum-deploy-ssh-key
+  url: ssh://git@github.com/ahachmann/datentraum-platform-fluxcd.git
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: datentraum-fluxcd
+  namespace: datentraum
+spec:
+  serviceAccountName: datentraum-flux-sa
+  targetNamespace: datentraum
+  interval: 10m0s
+  path: ./environments/datentraum.de
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: datentraum-platform-fluxcd
