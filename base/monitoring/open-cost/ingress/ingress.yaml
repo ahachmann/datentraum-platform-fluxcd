@@ -5,7 +5,7 @@ metadata:
     cert-manager.io/cluster-issuer: ${CLUSTER_ISSUER}
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
-    traefik.ingress.kubernetes.io/router.middlewares: ${TARGET_NAMESPACE}-oauth-errors@kubernetescrd,${TARGET_NAMESPACE}-oauth-auth@kubernetescrd,${TARGET_NAMESPACE}-sticky@kubernetescrd,${TARGET_NAMESPACE}-cors@kubernetescrd,${TARGET_NAMESPACE}-buffering@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: ${TARGET_NAMESPACE}-oauth-errors@kubernetescrd,${TARGET_NAMESPACE}-oauth-auth@kubernetescrd,${TARGET_NAMESPACE}-cors@kubernetescrd,${TARGET_NAMESPACE}-buffering@kubernetescrd
   name: open-cost-ingress
 spec:
   rules:

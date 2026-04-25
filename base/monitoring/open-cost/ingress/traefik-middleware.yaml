@@ -2,18 +2,6 @@
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
-  name: sticky
-  namespace: ${TARGET_NAMESPACE}
-spec:
-  sticky:
-    cookie:
-      name: nginx-session
-      httpOnly: true
-      secure: true
----
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
   name: cors
   namespace: ${TARGET_NAMESPACE}
 spec:
