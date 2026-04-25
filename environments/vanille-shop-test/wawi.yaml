@@ -20,7 +20,7 @@ spec:
       STORAGE_CLASS_NAME: "hcloud-volumes"
       PVC_STORAGE_SIZE: "10Gi"
       SHOP_WARE_API_URL: "https://www.vanille-shop.de/stageware1/api/"
-      SHOP_WARE_API_AUTHORIZATION_URL: "https://www.vanille-shop.de/stageware1/api/oauth/token"
+      SHOP_WARE_API_AUTHORIZATION_URL: "https://www.vanille-shop.de/stageware2/api/oauth/token"
       SHOW_WARE_INTEGRATION_ENABLED: "false"
       LOGGING_LEVEL_ROOT: "INFO"
       WAWI_DB_SECRET: "vaults/VS-Infra/items/Wawi VS Test"  
