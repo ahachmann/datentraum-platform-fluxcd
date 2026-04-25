@@ -1,0 +1,46 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+metadata:
+  name: keycloak
+resources:
+  - ../../base/security/keycloak
+
+patches:
+  - target:
+      kind: StatefulSet
+      name: keycloak
+    patch: |-
+      - op: add
+        path: /spec/template/spec/volumes
+        value:
+          - name: theme-cvo-login
+            configMap:
+              name: kc-theme-cvo-login
+          - name: theme-cvo-messages
+            configMap:
+              name: kc-theme-cvo-messages
+          - name: theme-cvo-css
+            configMap:
+              name: kc-theme-cvo-css
+          - name: theme-cvo-img
+            configMap:
+              name: kc-theme-cvo-img
+  - target:
+      kind: StatefulSet
+      name: keycloak
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/volumeMounts
+        value:
+          - name: theme-cvo-login
+            mountPath: /opt/keycloak/themes/cvo/login
+            readOnly: true
+          - name: theme-cvo-messages
+            mountPath: /opt/keycloak/themes/cvo/login/messages
+            readOnly: true
+          - name: theme-cvo-css
+            mountPath: /opt/keycloak/themes/cvo/login/resources/css
+            readOnly: true
+          - name: theme-cvo-img
+            mountPath: /opt/keycloak/themes/cvo/login/resources/img
+            readOnly: true

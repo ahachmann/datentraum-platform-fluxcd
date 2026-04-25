@@ -22,9 +22,11 @@ metadata:
   name: iam
   namespace: flux-system
 spec:
+  dependsOn:
+    - name: iam-theme
   interval: 10m0s
   targetNamespace: iam
-  path: ./base/security/keycloak
+  path: ./hetzner-k8s-dt-01/iam
   prune: true
   sourceRef:
     kind: GitRepository
@@ -47,8 +49,6 @@ spec:
   targetNamespace: iam
   path: ./base/security/keycloak/keycloak-theme
   prune: true
-  dependsOn:
-    - name: iam
   sourceRef:
     kind: GitRepository
     name: flux-system

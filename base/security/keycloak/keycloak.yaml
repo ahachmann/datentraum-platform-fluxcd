@@ -145,29 +145,3 @@ spec:
             requests:
               cpu: 500m
               memory: 1700Mi
-          volumeMounts:
-            - name: theme-cvo-login
-              mountPath: /opt/keycloak/themes/cvo/login
-              readOnly: true
-            - name: theme-cvo-messages
-              mountPath: /opt/keycloak/themes/cvo/login/messages
-              readOnly: true
-            - name: theme-cvo-css
-              mountPath: /opt/keycloak/themes/cvo/login/resources/css
-              readOnly: true
-            - name: theme-cvo-img
-              mountPath: /opt/keycloak/themes/cvo/login/resources/img
-              readOnly: true
-      volumes:
-        - name: theme-cvo-login
-          configMap:
-            name: kc-theme-cvo-login
-        - name: theme-cvo-messages
-          configMap:
-            name: kc-theme-cvo-messages
-        - name: theme-cvo-css
-          configMap:
-            name: kc-theme-cvo-css
-        - name: theme-cvo-img
-          configMap:
-            name: kc-theme-cvo-img
