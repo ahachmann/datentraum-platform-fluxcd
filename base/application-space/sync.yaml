@@ -1,0 +1,36 @@
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: ${APPLICATION}-deploy-ssh-key
+  namespace: ${APPLICATION_NAMESPACE}-flux
+spec:
+  itemPath: "vaults/VS-Infra/items/VS GitHub Deploy SSH-Key"  
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: ${APPLICATION_NAMESPACE}-platform-fluxcd
+  namespace: ${APPLICATION_NAMESPACE}-flux
+spec:
+  interval: 1m0s
+  ref:
+    branch: main
+  secretRef:
+    name: ${APPLICATION}-deploy-ssh-key
+  url: ssh://git@github.com/ahachmann/datentraum-platform-fluxcd.git
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: ${APPLICATION}-fluxcd
+  namespace: ${APPLICATION_NAMESPACE}-flux
+spec:
+  serviceAccountName: ${APPLICATION}-flux-sa
+  targetNamespace: ${APPLICATION_NAMESPACE}
+  interval: 10m0s
+  path: ${KUSTOMIZATION_PATH}
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: ${APPLICATION_NAMESPACE}-platform-fluxcd

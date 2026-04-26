@@ -1,51 +1,18 @@
 ---
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: vanille-shop-flux
----
-apiVersion: v1
-kind: LimitRange
-metadata:
-  name: default-requests
-  namespace: vanille-shop-flux
-spec:
-  limits:
-  - type: Container
-    defaultRequest:
-      cpu: "50m"
-      memory: "64Mi"
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: vanille-shop-prod
----
-apiVersion: v1
-kind: LimitRange
-metadata:
-  name: default-requests
-  namespace: vanille-shop-prod
-spec:
-  limits:
-  - type: Container
-    defaultRequest:
-      cpu: "50m"
-      memory: "64Mi"
----
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: vanille-shop-prod
-  namespace: vanille-shop-flux
+  name: vs-wawi-prod-application
+  namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./environments/vanille-shop-production
+  path: ./base/application-space
   prune: true
   sourceRef:
     kind: GitRepository
-    name: datentraum-platform-fluxcd
+    name: flux-system
   postBuild:
     substitute:
-      TARGET_NAMESPACE: vanille-shop-prod
-      FLUX_NAMESPACE: vanille-shop-flux 
+      APPLICATION_NAMESPACE: vanille-shop-prod
+      APPLICATION: vanille-shop-prod
+      KUSTOMIZATION_PATH: ./environments/vanille-shop-production

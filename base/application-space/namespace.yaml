@@ -1,0 +1,22 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${APPLICATION_NAMESPACE}-flux
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${APPLICATION_NAMESPACE}
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-requests
+  namespace: ${APPLICATION_NAMESPACE}
+spec:
+  limits:
+  - type: Container
+    defaultRequest:
+      cpu: "50m"
+      memory: "64Mi"
