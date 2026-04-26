@@ -55,3 +55,4 @@ spec:
       CLIENT_SECRET_ITEM_PATH: "vaults/VS-Infra/items/OAuth Client Secret"
       DOMAIN: cloud-costs.vanille.hamburg
       TLS_SECRET_NAME: "cloud-costs.vanille.hamburg-tls"
+      TARGET_NAMESPACE: open-cost

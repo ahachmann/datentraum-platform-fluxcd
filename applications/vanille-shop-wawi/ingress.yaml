@@ -3,13 +3,15 @@ kind: Ingress
 metadata:
   annotations:
     cert-manager.io/cluster-issuer: ${CLUSTER_ISSUER}
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    traefik.ingress.kubernetes.io/router.tls: "true"
-    traefik.ingress.kubernetes.io/router.middlewares: iam-oauth-errors@kubernetescrd,iam-oauth-auth@kubernetescrd,${TARGET_NAMESPACE}-sticky@kubernetescrd,${TARGET_NAMESPACE}-cors@kubernetescrd,${TARGET_NAMESPACE}-buffering@kubernetescrd
+    #traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    #traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.middlewares: ${TARGET_NAMESPACE}-oauth-errors@kubernetescrd,${TARGET_NAMESPACE}-oauth-auth@kubernetescrd
+    # ,${TARGET_NAMESPACE}-sticky@kubernetescrd,${TARGET_NAMESPACE}-cors@kubernetescrd,${TARGET_NAMESPACE}-buffering@kubernetescrd
   name: wawi
 spec:
+  ingressClassName: ${INGRESS_CLASS}
   rules:
-  - host: wawi.vanille-shop.de
+  - host: ${DOMAIN}
     http:
       paths:
       - backend:
@@ -17,9 +19,9 @@ spec:
             name: wawi
             port:
               number: 9080
-        path: /.*
+        path: /
         pathType: Prefix
   tls:
   - hosts:
-    - wawi.vanille-shop.de
-    secretName: wawi-vanilleshop-tls
+    - ${DOMAIN}
+    secretName: ${TLS_SECRET_NAME}

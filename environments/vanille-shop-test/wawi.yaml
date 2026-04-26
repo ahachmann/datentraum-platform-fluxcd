@@ -27,3 +27,7 @@ spec:
       WAWI_SHOPWARE_SECRET: "vaults/VS-Infra/items/Showpare VS API Key Read Prod"
       WAWI_SMTP_SECRET: "vaults/VS-Infra/items/VS Mail SMTP"
       WAWI_MQTT_SECRET: "vaults/VS-Infra/items/VS Mqtt Client"
+      DOMAIN: "wawi.vanille.hamburg"
+      TLS_SECRET_NAME: "wawi-general-tls"
+      CLUSTER_ISSUER: "letsencrypt-prod"
+      INGRESS_CLASS: "traefik"

@@ -152,6 +152,14 @@ spec:
           value:
             recovery:
               source: restore-source
+        - op: add
+          path: /spec/resources
+          value:
+            requests:
+              memory: "256Mi"
+              cpu: "150m"
+            limits:
+              memory: "1Gi"
       target:
         kind: Cluster
         name: pg-cluster-01

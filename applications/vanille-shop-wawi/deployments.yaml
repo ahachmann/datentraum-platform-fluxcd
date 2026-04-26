@@ -22,6 +22,15 @@ spec:
       labels:
         app: wawi
     spec:
+      initContainers:
+      - name: fix-permissions
+        image: busybox
+        command: ["sh", "-c", "chown -R 1000:1000 /var/wawi-files"]
+        volumeMounts:
+        - name: file-volume
+          mountPath: /var/wawi-files
+        securityContext:
+          runAsUser: 0
       containers:
       - args:
         - -jar
