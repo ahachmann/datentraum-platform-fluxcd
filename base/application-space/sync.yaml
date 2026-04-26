@@ -27,10 +27,15 @@ metadata:
   namespace: ${APPLICATION_NAMESPACE}-flux
 spec:
   serviceAccountName: ${APPLICATION}-flux-sa
-  targetNamespace: ${APPLICATION_NAMESPACE}
+  targetNamespace: ${APPLICATION_NAMESPACE}-flux
   interval: 10m0s
   path: ${KUSTOMIZATION_PATH}
   prune: true
   sourceRef:
     kind: GitRepository
     name: ${APPLICATION_NAMESPACE}-platform-fluxcd
+  postBuild:
+    substitute:
+      FLUX_NAMESPACE: ${APPLICATION_NAMESPACE}-flux
+      TARGET_NAMESPACE: ${APPLICATION_NAMESPACE}
+      GIT_REPOSITORY: ${APPLICATION_NAMESPACE}-platform-fluxcd

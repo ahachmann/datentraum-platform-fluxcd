@@ -10,7 +10,7 @@ spec:
   prune: true
   sourceRef:
     kind: GitRepository
-    name: datentraum-platform-fluxcd
+    name: ${GIT_REPOSITORY}
   postBuild:
     substitute:
       QUOTING: '"'

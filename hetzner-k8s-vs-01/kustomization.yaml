@@ -7,11 +7,11 @@ resources:
   - open-cost.yaml
   - operators.yaml
 #  - smb-csi-driver.yaml
-  - git-repo.yaml
+#  - git-repo.yaml
   - pg-cluster-01.yaml
   - iam.yaml
 #  - nextcloud.yaml
-#  - vanille-shop-test.yaml
+  - vanille-shop-test.yaml
 #  - vanille-shop-production.yaml
 patches:
   - target:
