@@ -81,3 +81,78 @@ subjects:
 - kind: ServiceAccount
   name: ${APPLICATION}-flux-sa
   namespace: ${APPLICATION_NAMESPACE}-flux
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+  name: ${APPLICATION}-flux-role
+  namespace: ${APPLICATION_NAMESPACE}-flux
+rules:
+- apiGroups:
+  - onepassword.com
+  resources:
+  - onepassworditems
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  - configmaps
+  - persistentvolumeclaims
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - kustomize.toolkit.fluxcd.io
+  resources:
+  - kustomizations
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+  name: ${APPLICATION}-flux-rolebinding
+  namespace: ${APPLICATION_NAMESPACE}-flux
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ${APPLICATION}-flux-role
+subjects:
+- kind: ServiceAccount
+  name: ${APPLICATION}-flux-sa
+  namespace: ${APPLICATION_NAMESPACE}-flux  
