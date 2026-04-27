@@ -16,6 +16,6 @@ spec:
     substitute:
       ISSUER: https://iam.vanille.hamburg/realms/VanilleShop
       CLIENT_SECRET_ITEM_PATH: "vaults/VS-Infra/items/OAuth Client Secret"
-      DOMAIN: wawi.vanille.hamburg
+      DOMAIN: wawi-test.vanille.hamburg
       TLS_SECRET_NAME: wawi-general-tls
       TARGET_NAMESPACE: ${TARGET_NAMESPACE}
