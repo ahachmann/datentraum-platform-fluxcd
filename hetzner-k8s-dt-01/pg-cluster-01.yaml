@@ -112,6 +112,28 @@ spec:
         name: pg-cluster-01
         namespace: pg-cluster
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pg-cluster-01-rw-np
+  namespace: pg-cluster
+  labels:
+    cnpg.io/cluster: pg-cluster-01
+  annotations:
+    cnpg.io/operatorVersion: 1.27.0
+spec:
+  ports:
+    - name: postgres
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+      nodePort: 30432
+  selector:
+    cnpg.io/cluster: pg-cluster-01
+    cnpg.io/instanceRole: primary
+  type: NodePort
+
+---
 apiVersion: postgresql.cnpg.io/v1
 kind: Database
 metadata:
