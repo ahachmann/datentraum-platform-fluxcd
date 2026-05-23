@@ -6,13 +6,10 @@ resources:
   - ../base/monitoring/prometheus-stack
   - open-cost.yaml
   - operators.yaml
-#  - smb-csi-driver.yaml
-#  - git-repo.yaml
-  - pg-cluster-01.yaml
+  - postgres-clusters/
   - iam.yaml
-#  - nextcloud.yaml
   - vanille-shop-test.yaml
-#  - vanille-shop-production.yaml
+  - vanille-shop/production/
 patches:
   - target:
       kind: OnePasswordItem

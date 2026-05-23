@@ -1,0 +1,38 @@
+---
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: hetzner-s3-store
+  namespace: vs-prod-pg-cluster
+spec:
+  configuration:  
+    destinationPath: s3://wh-gmbh-pg-backup/20260524-prod
+    endpointURL: https://fsn1.your-objectstorage.com
+    s3Credentials:
+      accessKeyId:
+        name: pg-backup-s3-key-secret
+        key: AccessKey
+      secretAccessKey:
+        name: pg-backup-s3-key-secret
+        key: SecretKey
+    wal:
+      compression: gzip
+---
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: hetzner-s3-restore
+  namespace: vs-prod-pg-cluster
+spec:
+  configuration:  
+    destinationPath: s3://wh-gmbh-pg-backup/20260523-prod
+    endpointURL: https://fsn1.your-objectstorage.com
+    s3Credentials:
+      accessKeyId:
+        name: pg-backup-s3-key-secret
+        key: AccessKey
+      secretAccessKey:
+        name: pg-backup-s3-key-secret
+        key: SecretKey
+    wal:
+      compression: gzip

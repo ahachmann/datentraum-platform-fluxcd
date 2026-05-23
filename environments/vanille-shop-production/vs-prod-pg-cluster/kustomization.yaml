@@ -1,0 +1,61 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - s3-object-stores.yaml
+  - secrets.yaml
+  - ../../../base/pg-clusters
+  - node-port-service.yaml
+  - databases.yaml
+
+namespace: vs-prod-pg-cluster
+
+patches:
+    - target:
+        kind: Cluster
+        name: pg-cluster-01
+      patch: |-
+        - op: add
+          path: /spec/externalClusters
+          value:
+            - name: restore-source
+              plugin:
+                name: barman-cloud.cloudnative-pg.io
+                parameters:
+                  barmanObjectName: hetzner-s3-restore
+                  serverName: pg-cluster-01  
+        - op: add
+          path: /spec/bootstrap
+          value:
+            recovery:
+              source: restore-source
+        - op: replace
+          path: /spec/plugins
+          value:
+            - name: barman-cloud.cloudnative-pg.io
+              isWALArchiver: true
+              parameters:
+                barmanObjectName: hetzner-s3-store
+        - op: replace
+          path: /spec/managed
+          value:
+            roles:
+              - name: wawi
+                login: true
+                ensure: present
+                createdb: false
+                passwordSecret:
+                  name: vs-prod-pg-wawi-secret
+        - op: add
+          path: /spec/resources
+          value:
+            requests:
+              memory: "256Mi"
+              cpu: "150m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+        - op: add
+          path: /spec/superuserSecret
+          value:
+             name: vs-prod-pg-superuser-secret
+

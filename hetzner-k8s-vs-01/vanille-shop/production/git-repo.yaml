@@ -3,15 +3,15 @@ apiVersion: onepassword.com/v1
 kind: OnePasswordItem
 metadata:
   name: vs-deploy-ssh-key
-  namespace: vanille-shop-flux
+  namespace: vs-prod
 spec:
   itemPath: "vaults/VS-Infra/items/VS GitHub Deploy SSH-Key"  
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
-  name: datentraum-platform-fluxcd
-  namespace: vanille-shop-flux
+  name: vs-platform-fluxcd
+  namespace: vs-prod
 spec:
   interval: 1m0s
   ref:

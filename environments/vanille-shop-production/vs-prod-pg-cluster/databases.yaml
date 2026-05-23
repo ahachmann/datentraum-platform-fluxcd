@@ -1,0 +1,12 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: wawi-database
+  namespace: vs-prod-pg-cluster
+spec:
+  name: wawi
+  owner: wawi
+  cluster:
+    name: pg-cluster-01
+
