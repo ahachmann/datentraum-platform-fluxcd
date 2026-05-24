@@ -8,7 +8,7 @@ metadata:
 spec:
   interval: 1m0s
   ref:
-    branch: main
+    branch: vs-prod
   secretRef:
     name: flux-system
   url: ssh://git@github.com/ahachmann/datentraum-platform-fluxcd.git
