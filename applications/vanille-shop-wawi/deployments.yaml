@@ -82,7 +82,11 @@ spec:
               name: vs-db-secret
               optional: false
         - name: SPRING_DATASOURCE_URL
-          value: jdbc:postgresql://pg-cluster-01-rw.pg-cluster:5432/wawi
+          valueFrom:
+            secretKeyRef:
+              key: URL
+              name: vs-db-secret
+              optional: false
         envFrom:
         - configMapRef:
             name: wawi-config

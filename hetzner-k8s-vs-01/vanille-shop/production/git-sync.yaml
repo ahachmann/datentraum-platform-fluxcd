@@ -19,5 +19,5 @@ spec:
       FLUX_NAMESPACE: vs-prod
       TARGET_NAMESPACE: vs-prod
       DOMAIN: wawi.vanille.hamburg
-      CLUSTER_ISSUER: letsencrypt-staging
+      CLUSTER_ISSUER: letsencrypt-prod
       GIT_REPOSITORY: vs-platform-fluxcd

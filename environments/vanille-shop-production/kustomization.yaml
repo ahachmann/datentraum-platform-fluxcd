@@ -3,4 +3,4 @@ kind: Kustomization
 resources:
   - vs-prod-pg-cluster
   - oauth-prod.yaml  
-#  - wawi.yaml
+  - wawi.yaml
