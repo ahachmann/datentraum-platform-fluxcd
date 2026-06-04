@@ -1,0 +1,17 @@
+# clusters/DEIN-CLUSTER/infrastructure-arc.yaml
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infrastructure-arc
+  namespace: flux-system
+spec:
+  interval: 10m
+  path: ./applications/github/arc
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  postBuild:
+    substitute:
+      ONEPASSWORD_ITEM_PATH: "vaults/DT-Infra/items/Github ARC Secret"
