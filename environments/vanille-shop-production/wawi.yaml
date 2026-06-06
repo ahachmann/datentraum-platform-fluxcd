@@ -21,7 +21,7 @@ spec:
       PVC_STORAGE_SIZE: "10Gi"
       SHOP_WARE_API_URL: "https://www.vanille-shop.de/api/"
       SHOP_WARE_API_AUTHORIZATION_URL: "https://www.vanille-shop.de/api/oauth/token"
-      SHOW_WARE_INTEGRATION_ENABLED: "false"
+      SHOW_WARE_INTEGRATION_ENABLED: "true"
       LOGGING_LEVEL_ROOT: "INFO"
       WAWI_DB_SECRET: "vaults/VS-Infra/items/Wawi VS Prod"  
       WAWI_SHOPWARE_SECRET: "vaults/VS-Infra/items/Showpare VS API Key Read Prod"
