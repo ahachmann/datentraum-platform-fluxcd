@@ -8,6 +8,6 @@ resources:
   - pg-cluster-01.yaml
   - open-cost.yaml
   - iam.yaml
-  - github-arc.yaml
+  - github-arc
   - datentraum
   - elternrat

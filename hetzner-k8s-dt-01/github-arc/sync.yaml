@@ -1,0 +1,41 @@
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: arc-runners-deploy-ssh-key
+  namespace: arc-runners
+spec:
+  itemPath: "vaults/DT-Infra/items/ARC Runners DeployKey"  
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: arc-runners-platform-fluxcd
+  namespace: arc-runners
+spec:
+  interval: 1m0s
+  ref:
+    branch: main
+  secretRef:
+    name: arc-runners-deploy-ssh-key
+  url: ssh://git@github.com/ahachmann/datentraum-platform-fluxcd.git
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: arc-runners-fluxcd
+  namespace: arc-runners
+spec:
+  serviceAccountName: arc-runners-flux-sa
+  targetNamespace: arc-runners
+  interval: 10m0s
+  path: ./applications/github/arc
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: arc-runners-platform-fluxcd
+  postBuild:
+    substitute:
+      ONEPASSWORD_ITEM_PATH: "vaults/DT-Infra/items/ARC Runners DeployKey"
+      FLUX_NAMESPACE: arc-runners
+      TARGET_NAMESPACE: arc-runners
