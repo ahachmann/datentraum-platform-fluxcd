@@ -1,0 +1,45 @@
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+type: kubernetes.io/dockerconfigjson
+metadata:
+  name: hankook-pull-secret
+  namespace: hankook
+spec:
+  itemPath: "vaults/DT-Infra/items/hankook-pullsecret"  
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: hankook-deploy-ssh-key
+  namespace: hankook
+spec:
+  itemPath: "vaults/DT-Infra/items/Hankook GitHub Read"  
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: hankook-platform-fluxcd
+  namespace: hankook
+spec:
+  interval: 1m0s
+  ref:
+    branch: main
+  secretRef:
+    name: hankook-deploy-ssh-key
+  url: ssh://git@github.com/Han-KOOK-family/hankook.git
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: hankook-fluxcd
+  namespace: hankook
+spec:
+  serviceAccountName: hankook-flux-sa
+  targetNamespace: hankook
+  interval: 10m0s
+  path: ./kustomize
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: hankook-platform-fluxcd
