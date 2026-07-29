@@ -6,6 +6,7 @@ resources:
   - external-dns
   - monitoring
   - operators.yaml
+  - kubescape
   - pg-cluster-01.yaml
   - open-cost.yaml
   - iam.yaml
