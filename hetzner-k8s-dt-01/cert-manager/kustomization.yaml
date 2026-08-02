@@ -3,3 +3,12 @@ kind: Kustomization
 resources:
   - ../../base/security/cert-manager
   - ../../base/security/cert-manager-webhook-hetzner
+patches:
+  - target:
+      kind: OnePasswordItem
+      name: hetzner-credentials
+      namespace: cert-manager
+    patch: |-
+      - op: replace
+        path: /spec/itemPath
+        value: "vaults/DT-Infra/items/hetzner-dns-token"  

@@ -4,3 +4,11 @@ metadata:
   name: cert-manager-webhook-hetzner
 resources:
   - helm-repository.yaml
+  - helm-release.yaml
+configMapGenerator:
+  - name: cert-manager-webhook-hetzner-values
+    namespace: cert-manager
+    files:
+      - values.yaml
+generatorOptions:
+  disableNameSuffixHash: true

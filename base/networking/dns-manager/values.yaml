@@ -12,5 +12,10 @@ provider:
           secretKeyRef:
             name: hetzner-credentials
             key: api-key
+sources:
+  - service
+  - ingress
+  - gateway-httproute
 extraArgs:
   - "--txt-prefix=reg-%{record_type}-"
+  - "--events"                     # optional: sofortige Reaktion statt nur Poll alle 60s
