@@ -3,15 +3,13 @@ kind: Gateway
 metadata:
   name: hankook-gateway
   namespace: hankook
-  # annotations:
-  #   cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   gatewayClassName: traefik
   listeners:
     - name: hankook-https
       protocol: HTTPS
-      port: 443
-      hostname: hankook.hachmann.hamburg
+      port: 8443
+      hostname: hankook.datentraum.de
       tls:
         mode: Terminate
         certificateRefs:
