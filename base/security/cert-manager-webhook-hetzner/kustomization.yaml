@@ -5,6 +5,7 @@ metadata:
 resources:
   - helm-repository.yaml
   - helm-release.yaml
+  - cluster-issuer.yaml
 configMapGenerator:
   - name: cert-manager-webhook-hetzner-values
     namespace: cert-manager

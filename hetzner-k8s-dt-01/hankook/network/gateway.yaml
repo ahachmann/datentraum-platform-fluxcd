@@ -1,0 +1,28 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: hankook-gateway
+  namespace: hankook
+  # annotations:
+  #   cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  gatewayClassName: traefik
+  listeners:
+    - name: hankook-https
+      protocol: HTTPS
+      port: 443
+      hostname: hankook.hachmann.hamburg
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: hankook-tls-secret   # -> eigenes Certificate nur für hankook.hachmann.hamburg
+    # - name: bar-https
+    #   protocol: HTTPS
+    #   port: 443
+    #   hostname: bar.example.com
+    #   tls:
+    #     mode: Terminate
+    #     certificateRefs:
+    #       - kind: Secret
+    #         name: bar-example-com-tls   # -> eigenes Certificate nur für bar.example.com
