@@ -305,7 +305,8 @@ prometheus:
     persistentVolumeClaimRetentionPolicy: 
       whenDeleted: Retain
       whenScaled: Retain
-
+    retention: 60d
+    retentionSize: 10GB
     ## Prometheus StorageSpec for persistent data
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/platform/storage.md
     ##
