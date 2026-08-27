@@ -44,3 +44,6 @@ patches:
           - name: theme-cvo-img
             mountPath: /opt/keycloak/themes/cvo/login/resources/img
             readOnly: true
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: quay.io/keycloak/keycloak:26.7.2
