@@ -153,6 +153,9 @@ spec:
             recovery:
               source: restore-source
         - op: add
+          path: /spec/storage/size
+          value: 20Gi
+        - op: add
           path: /spec/resources
           value:
             requests:
