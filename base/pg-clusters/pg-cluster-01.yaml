@@ -21,6 +21,8 @@ spec:
   imageName: ghcr.io/tensorchord/cloudnative-vectorchord:16.9-0.4.3
   managed: {}
   postgresql:
+    parameters:
+      max_slot_wal_keep_size: "10GB"   
     shared_preload_libraries:
       - "vchord.so"
   monitoring:
