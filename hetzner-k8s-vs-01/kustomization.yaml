@@ -33,6 +33,9 @@ patches:
       - op: add
         path: /spec/values
         value:
+          prometheus:
+            prometheusSpec:
+              retentionSize: 8GB
           grafana:
             ingress:
               enabled: true
