@@ -1,0 +1,580 @@
+= Traefik auf Kubernetes: Konzepte, API-Anbindung und Service-Exposition
+Alex
+:toc: left
+:toclevels: 3
+:sectnums:
+:source-highlighter: rouge
+:icons: font
+
+[NOTE]
+====
+Dieses Dokument fasst öffentlich dokumentiertes Verhalten von Traefik Proxy (v3, Stand Juli 2026) zusammen. Jeder Abschnitt endet mit einem Unterabschnitt *Quellen*, der auf die jeweilige Original-Dokumentation verlinkt. Wo die Traefik-Doku unterschiedliche Versionen zeigt (z. B. Gateway-API-Spec-Version), ist die aktuell verlinkte Version angegeben – bitte bei Bedarf gegen die zum Zeitpunkt der Umsetzung aktuelle Version prüfen, da sich Versionsnummern (z. B. Gateway-API v1.5.1, Traefik-Chart v3.7) schnell ändern.
+====
+
+== Kapitel 1: Grundkonzept – wie Traefik Requests verarbeitet
+
+Bevor es um Kubernetes geht, lohnt sich das Grundmodell von Traefik, weil sich die Kubernetes-Objekte später 1:1 darauf abbilden lassen. Traefik basiert auf vier Bausteinen:
+
+* *EntryPoints* – die Netzwerk-Einstiegspunkte (Ports), auf denen Traefik lauscht (z. B. `web` = Port 80, `websecure` = Port 443). Diese werden **statisch** beim Start von Traefik konfiguriert und ändern sich zur Laufzeit nicht.
+* *Router* – prüfen eingehende Requests gegen eine Regel (Host, Pfad, Header, Methode, ...) und entscheiden, an welchen Service weitergeleitet wird.
+* *Middlewares* – optionale Verarbeitungsschritte zwischen Router und Service (z. B. BasicAuth, StripPrefix, Rate-Limiting, Header-Manipulation).
+* *Services* – definieren, wie der eigentliche Backend-Service erreichbar ist (Load-Balancing, Server-URLs, Health-Checks).
+
+Der Ablauf: Request kommt auf einem EntryPoint an → passender Router wird anhand der Regel ermittelt (Router mit spezifischerer/längerer Regel bzw. höherer `priority` gewinnt) → konfigurierte Middlewares laufen durch → Service leitet an das Backend weiter.
+
+*Provider* sind der fünfte Baustein: Sie sind die "Entdeckungsmechanismen", die diese Konfiguration automatisch aus der Infrastruktur ableiten – Docker, Datei, Kubernetes usw. Das ist der Punkt, an dem Kubernetes ins Spiel kommt: Ein Kubernetes-Provider übersetzt Kubernetes-Objekte (Ingress, CRDs, Gateway-API-Objekte) laufend in genau diese vier Bausteine (EntryPoints bleiben dabei meist statisch/Helm-konfiguriert, Router/Middleware/Service werden dynamisch generiert).
+
+=== Statische vs. dynamische Konfiguration
+
+Wichtig für das Verständnis von Traefik generell: Es gibt eine *statische Konfiguration* (beim Start festgelegt, z. B. welche Provider aktiv sind, welche EntryPoints existieren – i. d. R. über Helm-`values.yaml` oder CLI-Flags/`traefik.yaml`) und eine *dynamische Konfiguration* (wird laufend von den Providern nachgeladen, z. B. Router/Service/Middleware-Definitionen aus Ingress-Objekten).
+
+=== Quellen
+
+* Konzepte (EntryPoints/Router/Middleware/Service): https://doc.traefik.io/traefik/master/getting-started/concepts/
+* Routing-Übersicht mit Beispiel-Konfiguration: https://doc.traefik.io/traefik/v3.4/routing/overview/
+* Referenz HTTP-Router (alle Felder, inkl. `rule`, `priority`, `middlewares`, `service`): https://doc.traefik.io/traefik/reference/routing-configuration/http/routing/router/
+* Provider-Übersicht (Liste aller unterstützten Provider inkl. Kubernetes): https://doc.traefik.io/traefik/reference/install-configuration/providers/overview/
+
+== Kapitel 2: Traefik in Kubernetes installieren (Grundlage für alle Provider)
+
+Traefik läuft in Kubernetes typischerweise als Deployment/DaemonSet, das über den offiziellen Helm-Chart `traefik/traefik` installiert wird. Der Chart bootstrapt seit Chart-Version v28.x Traefik Proxy v3 standardmäßig mit der `IngressRoute`-CRD als Ingress-Controller.
+
+[source,bash]
+----
+helm repo add traefik https://traefik.github.io/charts
+helm repo update
+kubectl create namespace traefik
+
+helm install traefik traefik/traefik \
+  --namespace traefik \
+  --values values.yaml
+----
+
+Wichtige Punkte aus der Chart-Dokumentation, die für dein k3s/Flux-Setup relevant sind:
+
+* Ab Chart-Version v34.x gibt es einen optionalen separaten Chart `traefik-crds`, um CRD-Lifecycle von Helm-Caveats (Helm aktualisiert CRDs bei Upgrades standardmäßig nicht zuverlässig) zu entkoppeln – relevant, wenn ihr die CRDs separat über Flux/Kustomize verwalten wollt.
+* Ab Chart-Version v40.x werden die Gateway-API-CRDs **nicht mehr automatisch mitgeliefert** – diese müssen bei Nutzung des Gateway-API-Providers separat installiert werden (siehe Kapitel 5).
+* Mindestanforderung: Kubernetes-Server-Version v1.22.0 oder höher (chart-abhängig, aktuelle Charts erwarten neuere Versionen – bitte im Zweifel gegen die Chart-README prüfen).
+
+=== Quellen
+
+* Offizieller Setup-Guide (Schritt-für-Schritt, inkl. EntryPoints web/websecure, HTTP→HTTPS-Redirect, Dashboard-Absicherung): https://doc.traefik.io/traefik/setup/kubernetes/
+* Helm-Chart-Repo mit README (CRD-Chart, Signierung, Migrationshinweise v2→v3): https://github.com/traefik/traefik-helm-chart
+* Chart-Paket auf Artifact Hub (Werte-Referenz, Versionshinweise): https://artifacthub.io/packages/helm/traefik/traefik
+
+== Kapitel 3: Provider 1 – Kubernetes Ingress Provider (Standard-`Ingress`-Objekt)
+
+Das ist die "einfachste"/portabelste Variante: Traefik implementiert hier die **native Kubernetes-Ingress-API** (`networking.k8s.io/v1`, Kind `Ingress`) – also genau die Ressource, die auch andere Ingress-Controller (nginx, HAProxy, ...) verstehen. Traefik beobachtet (watched) über den Kubernetes-API-Server alle Ingress-Events und leitet daraus automatisch Router, Services und Handler ab.
+
+Beispiel aus der offiziellen Dokumentation:
+
+[source,yaml]
+----
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: foo
+  namespace: production
+spec:
+  rules:
+    - host: example.net
+      http:
+        paths:
+          - path: /bar
+            pathType: Exact
+            backend:
+              service:
+                name: service1
+                port:
+                  number: 80
+          - path: /foo
+            pathType: Exact
+            backend:
+              service:
+                name: service1
+                port:
+                  number: 80
+----
+
+Aktivierung in der statischen Konfiguration (Helm `values.yaml` bzw. `providers`-Sektion):
+
+[source,yaml]
+----
+providers:
+  kubernetesIngress: {}
+----
+
+*Vorteil:* Portabel, jeder kennt die Ingress-API, funktioniert mit Cert-Manager direkt (Cert-Manager erzeugt TLS-Secrets über Ingress-Annotationen).
+*Nachteil:* Die native Ingress-Ressource kennt viele Traefik-Features (Middlewares, erweiterte Routing-Regeln, TCP/UDP) nicht nativ – dafür braucht man entweder Annotationen oder den CRD-Provider (Kapitel 4).
+
+Für TLS-Zertifikatsverwaltung: Traefik selbst kann über EntryPoints + `certResolver` (ACME) TLS terminieren, oder – wie in eurem Setup ggf. sinnvoll – Cert-Manager erzeugt die Secrets, die dann als `tls.secretName` im Ingress referenziert werden. Bei reiner CRD-Nutzung (Kapitel 4) kann Cert-Manager laut Doku nicht direkt mit den CRDs interagieren; als Workaround wird empfohlen, zusätzlich den Ingress-Provider zu aktivieren, damit Cert-Manager darüber die ACME-HTTP01-Challenge abwickeln kann.
+
+=== Quellen
+
+* Kubernetes-Ingress-Provider-Referenz (aktuelle Version, inkl. Ingress-v1-Beispiel, Cert-Manager-Hinweis): https://doc.traefik.io/traefik/reference/install-configuration/providers/kubernetes/kubernetes-ingress/
+* Versionsspezifische Doku (z. B. v3.3) zur Bestätigung des Beispiels: https://doc.traefik.io/traefik/v3.3/providers/kubernetes-ingress/
+
+== Kapitel 4: Provider 2 – Kubernetes CRD Provider (`traefik.io`-eigene Ressourcen)
+
+Weil die Community mehr Traefik-native Features ohne "Annotation-Wildwuchs" wollte, hat das Traefik-Team eigene *Custom Resource Definitions* entwickelt. Der wichtigste Typ ist `IngressRoute` – eine CRD-Implementierung eines Traefik-HTTP-Routers direkt als Kubernetes-Objekt. Traefik liest hier die Routing-Konfiguration aus diesen CRDs statt aus dem generischen `Ingress`-Objekt.
+
+Verfügbare CRD-"Bausteine" (die exakten Kinds/Felder bitte gegen die Doku-Referenz prüfen, da sie sich zwischen Chart-Versionen leicht ändern können):
+
+* `IngressRoute` – HTTP-Router
+* `IngressRouteTCP` / `IngressRouteUDP` – TCP/UDP-Router
+* `Middleware` / `MiddlewareTCP` – wiederverwendbare Middleware-Definitionen
+* `TraefikService` – erweiterte Service-Definitionen (z. B. Weighted Round Robin über mehrere Services, Mirroring)
+* `ServersTransport` – TLS-/Transport-Einstellungen für Backend-Verbindungen
+* `TLSOption` / `TLSStore` – TLS-Feinsteuerung
+
+Wichtige Besonderheit laut Doku: Die CRDs nutzen `name` + `namespace`, um auf andere Kubernetes-Ressourcen zu verweisen, und referenzieren TLS-Zertifikate/Credentials über `secret`.
+
+Voraussetzung, wenn ihr den Chart **ohne** die mitgelieferten CRDs nutzt oder manuell upgraded (relevant für euer Flux-CD-GitOps-Setup, falls ihr CRDs separat versioniert):
+
+[source,bash]
+----
+# CRDs installieren/aktualisieren
+kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v3.7/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
+
+# RBAC für den CRD-Provider installieren/aktualisieren
+kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v3.7/docs/content/reference/dynamic-configuration/kubernetes-crd-rbac.yml
+----
+
+Aktivierung in der statischen Konfiguration:
+
+[source,yaml]
+----
+providers:
+  kubernetesCRD:
+    allowEmptyServices: true
+----
+
+Beispiel `IngressRoute` (klassisches Muster aus der Doku, API-Group ist heute `traefik.io/v1alpha1`, historisch `traefik.containo.us/v1alpha1`):
+
+[source,yaml]
+----
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ingressroutebar
+  namespace: default
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`example.com`)
+      kind: Rule
+      services:
+        - name: whoami
+          port: 80
+      middlewares:
+        - name: stripprefix
+----
+
+*Vorteil:* Voller Zugriff auf alle Traefik-Features direkt und typisiert als Kubernetes-Objekt (kein Annotations-Gefrickel), gut GitOps-tauglich, da jede `IngressRoute`/`Middleware` ein eigenständiges, deklaratives Manifest ist – passt sehr gut zu eurem Flux-CD/Kustomize-Stack.
+*Nachteil:* Nicht portabel zu anderen Ingress-Controllern (Traefik-spezifische API).
+
+=== Quellen
+
+* Aktuelle CRD-Provider-Referenz (Installationsbefehle, RBAC, Übersicht aller CRD-Typen): https://doc.traefik.io/traefik/reference/install-configuration/providers/kubernetes/kubernetes-crd/
+* Versionsspezifisches Beispiel für `IngressRoute`/`Middleware`/`TraefikService` (v2.11, Konzept identisch in v3): https://doc.traefik.io/traefik/v2.11/providers/kubernetes-crd/
+
+== Kapitel 5: Provider 3 – Kubernetes Gateway API Provider (`gateway.networking.k8s.io`)
+
+Die dritte Möglichkeit ist die herstellerneutrale **Gateway API**, eine Spezifikation der Kubernetes SIGs (Nachfolgekonzept zu Ingress, mit klarer Rollentrennung zwischen Infrastruktur-Betreiber und App-Team). Traefik implementiert diese Spezifikation als eigenen Provider. Laut aktueller Doku wird Standard-Version v1.5.1 der Gateway-API-Spezifikation unterstützt (voller Support für `HTTPRoute`, teilweise `GRPCRoute`, `BackendTLSPolicy`, `TLSRoute`, sowie `TCPRoute` aus dem Experimental-Channel) – **diese Versionsnummer ändert sich regelmäßig, bitte bei Umsetzung gegen die aktuelle Doku-Seite prüfen.**
+
+Kernobjekte:
+
+* `GatewayClass` – cluster-weit, definiert welcher Controller (hier: `traefik.io/gateway-controller`) für Gateways dieser Klasse zuständig ist.
+* `Gateway` – definiert Listener (Ports/Protokolle/TLS), den eigentlichen Traffic-Einstiegspunkt.
+* `HTTPRoute` (bzw. `GRPCRoute`, `TCPRoute`, `TLSRoute`) – definiert das eigentliche Routing zu Backend-Services, referenziert einen `Gateway` über `parentRefs`.
+
+Installationsschritte laut aktueller Doku:
+
+[source,bash]
+----
+# 1. Gateway-API-CRDs installieren (Standard-Channel) - NICHT mehr automatisch im Traefik-Chart ab v40.x
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.1/standard-install.yaml
+
+# 2. RBAC für den Traefik-Gateway-Provider
+kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v3.7/docs/content/reference/dynamic-configuration/kubernetes-gateway-rbac.yml
+----
+
+Aktivierung in der statischen Konfiguration:
+
+[source,yaml]
+----
+providers:
+  kubernetesGateway: {}
+----
+
+Beispiel (Struktur, API-Version `v1` ist der aktuelle stabile Stand für Kern-Ressourcen):
+
+[source,yaml]
+----
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: traefik
+spec:
+  controllerName: traefik.io/gateway-controller
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: my-gateway
+spec:
+  gatewayClassName: traefik
+  listeners:
+    - name: web
+      protocol: HTTP
+      port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: whoami-http
+  namespace: default
+spec:
+  parentRefs:
+    - name: my-gateway
+  hostnames:
+    - whoami.example.com
+  rules:
+    - backendRefs:
+        - name: whoami
+          port: 80
+----
+
+Wichtiger Hinweis aus der Doku: Um Traefik-eigene Middlewares (aus Kapitel 4) als `ExtensionRef`-Filter innerhalb einer `HTTPRoute` zu nutzen, muss der CRD-Provider **zusätzlich** aktiviert sein – die beiden Provider lassen sich also kombinieren.
+
+=== Mehrere Domains an einem Gateway: TLS-Zertifikate pro Hostname
+
+Ein `Gateway` ist nicht auf eine einzelne Domain beschränkt. Ein Gateway kann mehrere Listener auf demselben Port (typischerweise `443`) betreiben, die sich jeweils über ein eigenes `hostname`-Feld und einen eigenen `tls.certificateRefs`-Verweis unterscheiden. Beim TLS-Handshake wählt der Gateway-API-Provider anhand des SNI (Server Name Indication) das passende Zertifikat aus – nicht die `HTTPRoute` selbst, denn diese trägt (wie in Kapitel 5 oben beschrieben) gar kein TLS-Feld.
+
+[source,yaml]
+----
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: my-gateway
+spec:
+  gatewayClassName: traefik
+  listeners:
+    - name: web
+      protocol: HTTP
+      port: 80
+    - name: foo-https
+      protocol: HTTPS
+      port: 443
+      hostname: foo.example.com
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: foo-example-com-tls
+    - name: bar-https
+      protocol: HTTPS
+      port: 443
+      hostname: bar.example.com
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: bar-example-com-tls
+----
+
+Jede `HTTPRoute` hängt sich per `parentRefs` (und passendem `hostnames`-Wert) an den jeweiligen Listener; das Zertifikat bleibt ausschließlich Sache des `Gateway`-Objekts. Ein einzelner Listener kann außerdem auch *mehrere* `certificateRefs` gleichzeitig tragen (z. B. für Zertifikatsrotation ohne Downtime):
+
+[source,yaml]
+----
+    tls:
+      mode: Terminate
+      certificateRefs:
+        - name: example-com-tls
+        - name: example-org-tls
+----
+
+[WARNING]
+====
+Laut einem offenen Traefik-Issue (Stand Juli 2026, https://github.com/traefik/traefik/issues/12742) verwendet Traefiks Gateway-API-Provider das `hostname`-Feld eines Listeners *nicht* als harte Filtergrenze für die TLS-Zertifikatsauswahl: Alle `certificateRefs` aus allen Listenern landen in einem gemeinsamen, flachen Zertifikatsspeicher, aus dem beim Handshake rein per SAN-Matching (nicht per Listener-Zuordnung) ausgewählt wird. `hostname` steuert laut Issue nur, welche `HTTPRoute`s an den Listener andocken dürfen. Solange sich die SANs eurer Zertifikate nicht überschneiden (z. B. ein Zertifikat pro exakter Domain wie oben), ist das Ergebnis trotzdem korrekt. Bei sich überlappenden Zertifikaten (z. B. gleichzeitig ein Wildcard `*.example.com` und ein Einzeldomain-Zertifikat `foo.example.com`) kann aber das "falsche" Zertifikat ausgeliefert werden – vor Produktiveinsatz mit überlappenden Zertifikaten lohnt sich ein Blick auf den aktuellen Status dieses Issues.
+====
+
+==== Ein Zertifikat pro Domain mit Cert-Manager erzeugen
+
+Damit Cert-Manager pro Domain ein *eigenes* Zertifikat erzeugt (statt eines einzelnen Zertifikats mit vielen SANs), braucht jeder Listener einen *eigenen* `secretName` in `certificateRefs`. Cert-Manager gruppiert die Listener eines Gateways nach referenziertem Secret-Namen: Für jeden eindeutigen Secret-Namen entsteht ein eigenes `Certificate`-Objekt, dessen `dnsNames` aus den `hostname`-Werten aller Listener zusammengeführt werden, die dieses Secret referenzieren (dedupliziert).
+
+[source,yaml]
+----
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: my-gateway
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  gatewayClassName: traefik
+  listeners:
+    - name: foo-https
+      protocol: HTTPS
+      port: 443
+      hostname: foo.example.com
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: foo-example-com-tls   # -> eigenes Certificate nur für foo.example.com
+    - name: bar-https
+      protocol: HTTPS
+      port: 443
+      hostname: bar.example.com
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: bar-example-com-tls   # -> eigenes Certificate nur für bar.example.com
+----
+
+Würdet ihr in beiden Listenern stattdessen denselben `secretName` referenzieren, erzeugt Cert-Manager nur *ein* `Certificate` mit beiden Hostnames als (dedupliziertem) `dnsNames`-Eintrag – also genau das "ein Zertifikat für alle Domains"-Muster, das ihr vermeiden wolltet. Getrennte Secret-Namen sind hier der Hebel, um pro Domain ein eigenes, unabhängig erneuerbares Zertifikat zu bekommen.
+
+*Vorteil:* Herstellerneutraler Standard, zukunftssicherer als klassisches Ingress, gut geeignet, wenn ihr evtl. später den Ingress-Controller wechseln wollt.
+*Nachteil:* Neuer/komplexer als Ingress, CRDs müssen jetzt (ab Chart v40.x) separat gepflegt werden, weniger "Community-Rezepte" im Vergleich zu klassischem Ingress.
+
+=== Quellen
+
+* Aktuelle Gateway-API-Provider-Referenz (unterstützte Spec-Version, Installationsschritte, ExtensionRef-Hinweis): https://doc.traefik.io/traefik/reference/install-configuration/providers/kubernetes/kubernetes-gateway/
+* Versionsspezifisches Beispiel `GatewayClass`/`Gateway`/`HTTPRoute` inkl. Middleware-Filter (v3.2): https://doc.traefik.io/traefik/v3.2/routing/providers/kubernetes-gateway/
+* Offizielle Gateway-API-Spezifikation der Kubernetes SIGs: https://gateway-api.sigs.k8s.io/
+* Hinweis zum Wegfall der Gateway-API-CRDs aus dem Helm-Chart ab v40.x: https://artifacthub.io/packages/helm/traefik/traefik/40.1.0
+* Gateway-API-Spezifikation zu TLS-Konfiguration pro Listener/Hostname (Beispiel `foo.example.com`/`bar.example.com` mit getrennten Zertifikaten): https://gateway-api.sigs.k8s.io/guides/tls/
+* Aktuelle Traefik-Routing-Referenz Gateway API (Beispiel mit mehreren `certificateRefs` pro Listener): https://doc.traefik.io/traefik/reference/routing-configuration/kubernetes/gateway-api/
+* Offenes Traefik-Issue zur SNI-/Zertifikatsauswahl unabhängig vom Listener-`hostname`: https://github.com/traefik/traefik/issues/12742
+* Cert-Manager-Doku zur Gateway-Annotation und Certificate-Erzeugung pro Secret-Name: https://cert-manager.io/docs/usage/gateway/
+
+== Kapitel 6: Die drei Provider im Vergleich
+
+[cols="1,2,2,2", options="header"]
+|===
+| Provider | API-Group / Kind | Portabilität | Feature-Umfang
+
+| Kubernetes Ingress
+| `networking.k8s.io/v1`, `Ingress`
+| hoch (Standard-K8s-API, funktioniert mit jedem Ingress-Controller)
+| Basis-Routing, mit Cert-Manager direkt kompatibel
+
+| Kubernetes CRD
+| `traefik.io/v1alpha1`, `IngressRoute` u. a.
+| niedrig (Traefik-spezifisch)
+| voller Traefik-Funktionsumfang, sehr GitOps-freundlich
+
+| Kubernetes Gateway API
+| `gateway.networking.k8s.io/v1`, `Gateway`/`HTTPRoute` u. a.
+| hoch (herstellerneutraler K8s-SIG-Standard)
+| wachsend, standardisierte Rollentrennung Infra/App-Team
+|===
+
+Alle drei Provider können in derselben statischen Konfiguration parallel aktiviert werden. Traefik generiert dann aus allen aktiven Providern gemeinsam die dynamische Konfiguration; bei Namenskollisionen zwischen Providern hilft die `@provider`-Suffix-Syntax (z. B. `mymiddleware@kubernetescrd`), um eindeutig zu referenzieren.
+
+=== Quellen
+
+* Provider-Übersicht mit Cross-Provider-Referenzierung (`@provider`-Syntax) und Precedence-Regeln: https://doc.traefik.io/traefik/reference/install-configuration/providers/overview/
+
+== Kapitel 7: Praktischer Fahrplan zum Exposen eines Service
+
+Ein pragmatischer, in eurem Flux-CD/Kustomize-Kontext gut abbildbarer Ablauf:
+
+1. Traefik ist per Helm-Chart im Cluster installiert (Kapitel 2), EntryPoints `web`/`websecure` sind konfiguriert.
+2. Entscheidung treffen, welcher Provider für den jeweiligen Service passt:
+   * Standard-HTTP-Service ohne besondere Anforderungen, evtl. Cert-Manager-Integration gewünscht → `Ingress`-Objekt (Kapitel 3).
+   * Ihr wollt Traefik-Features wie StripPrefix, BasicAuth, RateLimit, Circuit-Breaker, gewichtetes Load-Balancing über mehrere Services → `IngressRoute` + `Middleware` CRDs (Kapitel 4).
+   * Ihr wollt zukunftssicher/standardisiert arbeiten oder plant, den Ingress-Controller später zu wechseln → Gateway-API (Kapitel 5).
+3. Das jeweilige Manifest (Ingress / IngressRoute / HTTPRoute) als Kustomize-Ressource in eurem bestehenden Flux-Repo ablegen.
+4. TLS-Strategie festlegen: entweder Traefik-ACME (`certResolver` in der statischen Konfiguration) oder Cert-Manager mit `Certificate`-Ressource, deren erzeugtes Secret im Ingress/IngressRoute referenziert wird.
+5. Nach `flux reconcile` bzw. automatischem Sync prüfen, ob der Router in Traefik erschienen ist – z. B. über das Traefik-Dashboard oder `kubectl get ingressroute -A` / `kubectl get httproute -A`.
+
+[IMPORTANT]
+====
+Zu Punkt 5 (Dashboard/Debugging-Befehle) sowie zu konkreten TLS/ACME-Konfigurationsdetails habe ich hier bewusst nur allgemeine, dokumentierte Grundmuster wiedergegeben. Wenn du möchtest, gehe ich im nächsten Schritt gezielt auf eines der Kapitel (z. B. Kapitel 4 – CRD-Provider im Detail mit eurem konkreten Nextcloud/Keycloak-Anwendungsfall) ein und verifiziere die Details erneut gegen die aktuelle Doku, statt aus dem Gedächtnis zu ergänzen.
+====
+
+== Kapitel 8: ExternalDNS und ACME-Zertifikatsvalidierung im Zusammenspiel
+
+Dieses Kapitel beantwortet zwei konkrete Fragen aus der Praxis: Wann aktualisiert ExternalDNS einen DNS-Record, und muss der A-Record einer Domain bereits existieren, bevor Cert-Manager ein `Certificate` erfolgreich ausstellen kann? Die Beispiele orientieren sich an eurem tatsächlichen Setup (`base/networking/dns-manager/`, `base/security/cert-manager/issuer.yaml`) mit Hetzner DNS als Provider.
+
+=== Wann triggert ExternalDNS ein Update?
+
+ExternalDNS arbeitet mit zwei Mechanismen, die sich kombinieren lassen:
+
+* *Periodischer Full-Resync* (`--interval`, Default `1m`) – ExternalDNS fragt regelmäßig alle konfigurierten `sources` über die Kubernetes-API ab, berechnet den gewünschten DNS-Zustand und schreibt nur die Differenz zur bestehenden Zone beim Provider.
+* *Event-getriggert* (Flag `--events`) – zusätzlich registriert ExternalDNS dann Kubernetes-Watches auf die konfigurierten `sources` und reagiert nahezu sofort auf Create/Update/Delete, statt auf den nächsten Poll zu warten. `--min-event-sync-interval` verhindert dabei zu häufiges Nachtriggern bei kurz aufeinanderfolgenden Änderungen.
+
+Wichtig für Gateway-API-Ressourcen: ExternalDNS beobachtet standardmäßig nur die Sources `service` und `ingress`. Damit `Gateway`/`HTTPRoute`-Objekte (Kapitel 5) automatisch einen DNS-Record bekommen, muss die Source `gateway-httproute` explizit aktiviert werden. Euer aktuelles `base/networking/dns-manager/values.yaml` setzt `sources` nicht, nutzt also den Chart-Default (ohne Gateway API) – für den Hankook-Anwendungsfall mit `Gateway`/`HTTPRoute` müsste das ergänzt werden:
+
+[source,yaml]
+----
+# base/networking/dns-manager/values.yaml
+namespace: external-dns
+policy: sync
+sources:
+  - service
+  - ingress
+  - gateway-httproute
+extraArgs:
+  - "--txt-prefix=reg-%{record_type}-"
+  - "--events"                     # optional: sofortige Reaktion statt nur Poll alle 60s
+provider:
+  name: webhook
+  webhook:
+    image:
+      repository: docker.io/hetznercloud/external-dns-hetzner-webhook
+      tag: v0.1.2 # x-releaser-pleaser-version
+    env:
+      - name: HETZNER_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: hetzner-credentials
+            key: api-key
+----
+
+=== Braucht die Domain schon einen A-Record, bevor das Certificate erstellt wird?
+
+Das hängt vom ACME-Challenge-Typ ab, den der referenzierte `ClusterIssuer` nutzt:
+
+* *HTTP-01* (euer aktueller `letsencrypt-prod`/`letsencrypt-staging` in `base/security/cert-manager/issuer.yaml`, Solver `ingress` mit `ingressClassName: traefik`): Let's Encrypt muss die Domain auflösen können, um den Challenge-Pfad `/.well-known/acme-challenge/...` auf eurem Traefik-Entrypoint zu erreichen. Der A-Record muss also *zum Zeitpunkt der Validierung* existieren – nicht zwingend, bevor ihr das `Certificate`-Objekt erstellt. Da ExternalDNS und Cert-Manager typischerweise von derselben Ressource (Ingress/HTTPRoute mit passendem Hostname) ausgelöst werden, entsteht ein Wettlauf, der sich über die eingebauten Retries von Cert-Manager selbst auflöst: Vor jedem Presentieren einer Challenge macht Cert-Manager einen internen Self-Check und wiederholt das mit Backoff, bis DNS-Auflösung und Erreichbarkeit passen. Ohne `--events` in ExternalDNS kann der erste Versuch bis zu eine Poll-Periode (Default 60s) plus DNS-Propagation dauern – kein Fehlerzustand, nur Wartezeit, sichtbar über `kubectl describe challenge`.
+* *DNS-01*: Kein A-Record nötig, weder vorher noch für die Validierung selbst. Cert-Manager legt direkt über die DNS-Provider-API einen `_acme-challenge`-TXT-Record an – unabhängig von ExternalDNS und unabhängig davon, ob die Domain bereits auf euren Cluster zeigt. Das entkoppelt die Zertifikatsausstellung vollständig vom ExternalDNS-Timing.
+
+=== Umsetzung: HTTP-01 weiter über den Ingress-Provider (Status quo)
+
+Euer bestehendes Setup braucht keine Änderung, um zu funktionieren – es ist genau das in Kapitel 3 beschriebene Muster, bei dem der `Ingress`-Provider parallel zu Gateway API/CRD aktiviert bleibt, damit Cert-Manager die HTTP-01-Challenge darüber abwickeln kann:
+
+[source,yaml]
+----
+# base/security/cert-manager/issuer.yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    email: mail@datentraum.de
+    privateKeySecretRef:
+      name: issuer-account-key
+    server: https://acme-v02.api.letsencrypt.org/directory
+    solvers:
+      - http01:
+          ingress:
+            ingressClassName: traefik
+----
+
+Ein `Certificate` (wie `hetzner-k8s-dt-01/hankook/network/certificate.yaml`) referenziert diesen Issuer einfach über `issuerRef` – Cert-Manager erzeugt daraufhin selbstständig einen temporären `Ingress` für die Challenge.
+
+=== Umsetzung: HTTP-01 nativ über Gateway API (`gatewayHTTPRoute`)
+
+Alternative, falls ihr komplett vom Ingress-Provider weg wollt: Cert-Manager kann die HTTP-01-Challenge auch direkt über eine temporäre `HTTPRoute` an eurem bestehenden `Gateway` abwickeln, statt einen separaten `Ingress` zu erzeugen.
+
+[source,yaml]
+----
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod-gateway
+spec:
+  acme:
+    email: mail@datentraum.de
+    privateKeySecretRef:
+      name: issuer-account-key-gateway
+    server: https://acme-v02.api.letsencrypt.org/directory
+    solvers:
+      - http01:
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: my-gateway        # z. B. das Hankook-Gateway
+                namespace: hankook
+                sectionName: web        # der HTTP/Port-80-Listener aus Kapitel 5
+----
+
+Voraussetzung: Der referenzierte Gateway-Listener (`sectionName`) muss auf Port 80 lauschen, damit Let's Encrypt die Challenge unverschlüsselt erreichen kann. Liegt das `Certificate`-Objekt in einem anderen Namespace als der `Gateway`, ist zusätzlich ein `ReferenceGrant` nötig, damit der Gateway auf das Ziel-Secret zugreifen darf.
+
+=== Umsetzung: DNS-01 über den Hetzner-Webhook (zeitlich entkoppelt)
+
+Da ihr ohnehin den Hetzner-DNS-API-Token für ExternalDNS im Cluster habt (`hetzner-credentials`-Secret), lässt sich derselbe Token für einen DNS-01-Solver wiederverwenden – das macht die Zertifikatsausstellung komplett unabhängig vom ExternalDNS-Timing:
+
+[source,bash]
+----
+helm repo add hcloud https://hetzner.github.io/cert-manager-webhook-hetzner
+helm install cert-manager-webhook-hetzner hcloud/cert-manager-webhook-hetzner -n cert-manager
+----
+
+[source,yaml]
+----
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hetzner-token
+  namespace: cert-manager
+stringData:
+  token: <HETZNER_API_TOKEN>
+----
+
+[source,yaml]
+----
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod-dns01
+spec:
+  acme:
+    email: mail@datentraum.de
+    privateKeySecretRef:
+      name: issuer-account-key-dns01
+    server: https://acme-v02.api.letsencrypt.org/directory
+    solvers:
+      - dns01:
+          webhook:
+            solverName: hetzner
+            groupName: acme.hetzner.com
+            config:
+              tokenSecretKeyRef:
+                name: hetzner-token
+                key: token
+----
+
+*Vorteil:* Funktioniert auch für private/nicht öffentlich erreichbare Gateways, keine Abhängigkeit von ExternalDNS-Timing, keine temporären Ingress-/HTTPRoute-Objekte nötig, und ermöglicht Wildcard-Zertifikate (`*.hachmann.hamburg`), was mit HTTP-01 grundsätzlich nicht geht.
+*Nachteil:* Ein zusätzlicher Webhook-Pod im Cluster; API-Token muss (wie beim ExternalDNS-Token) sauber per RBAC/Secret-Scoping abgesichert werden.
+
+[NOTE]
+====
+Der offizielle Hetzner-Webhook (`hetzner/cert-manager-webhook-hetzner`) ist auf die aktuelle Hetzner Cloud API ausgelegt. Es existieren mehrere ältere Community-Forks (z. B. `vadimkim/cert-manager-webhook-hetzner`) mit teils abweichenden `groupName`-Werten – vor Einsatz die Chart-Version und `groupName` gegen die jeweils aktuelle Repo-README prüfen, da diese sich zwischen Forks unterscheiden.
+====
+
+=== Quellen
+
+* ExternalDNS – Sources/Betriebskonfiguration, `--interval`, `--events`, `--min-event-sync-interval`: https://kubernetes-sigs.github.io/external-dns/latest/docs/sources/gateway-api/
+* ExternalDNS Gateway-API-Source (`gateway-httproute` u. a.): https://github.com/kubernetes-sigs/external-dns/blob/master/docs/sources/gateway-api.md
+* Cert-Manager HTTP-01-Referenz (Ingress- und Gateway-API-Solver, `gatewayHTTPRoute`, `ReferenceGrant`-Hinweis): https://cert-manager.io/docs/configuration/acme/http01/
+* Cert-Manager DNS-01-Referenz: https://cert-manager.io/docs/configuration/acme/dns01/
+* Cert-Manager Troubleshooting ACME (Self-Check, Challenge-Debugging): https://cert-manager.io/docs/troubleshooting/acme/
+* Offizieller Hetzner Cert-Manager-Webhook (Quickstart, ClusterIssuer-Beispiel): https://github.com/hetzner/cert-manager-webhook-hetzner/blob/main/docs/guides/quickstart.md
+
+== Gesamt-Quellenverzeichnis
+
+* Traefik-Dokumentation (Startseite): https://doc.traefik.io/traefik/
+* Konzepte (EntryPoints, Router, Middleware, Service): https://doc.traefik.io/traefik/master/getting-started/concepts/
+* Provider-Übersicht: https://doc.traefik.io/traefik/reference/install-configuration/providers/overview/
+* Kubernetes-Ingress-Provider: https://doc.traefik.io/traefik/reference/install-configuration/providers/kubernetes/kubernetes-ingress/
+* Kubernetes-CRD-Provider: https://doc.traefik.io/traefik/reference/install-configuration/providers/kubernetes/kubernetes-crd/
+* Kubernetes-Gateway-API-Provider: https://doc.traefik.io/traefik/reference/install-configuration/providers/kubernetes/kubernetes-gateway/
+* Setup-Guide Kubernetes (Helm): https://doc.traefik.io/traefik/setup/kubernetes/
+* Helm-Chart-Repository: https://github.com/traefik/traefik-helm-chart
+* Helm-Chart auf Artifact Hub: https://artifacthub.io/packages/helm/traefik/traefik
+* HTTP-Router-Referenz (alle Felder): https://doc.traefik.io/traefik/reference/routing-configuration/http/routing/router/
+* Kubernetes Gateway API (offizielle SIG-Spezifikation): https://gateway-api.sigs.k8s.io/
+* Gateway-API-TLS-Konfiguration pro Listener/Hostname: https://gateway-api.sigs.k8s.io/guides/tls/
+* Aktuelle Traefik-Routing-Referenz Gateway API: https://doc.traefik.io/traefik/reference/routing-configuration/kubernetes/gateway-api/
+* Traefik-Issue zur SNI-/Zertifikatsauswahl unabhängig vom Listener-`hostname`: https://github.com/traefik/traefik/issues/12742
+* Cert-Manager-Doku zur Gateway-Annotation (Certificate-Erzeugung pro Secret-Name): https://cert-manager.io/docs/usage/gateway/
+* ExternalDNS Gateway-API-Source und Betriebskonfiguration: https://kubernetes-sigs.github.io/external-dns/latest/docs/sources/gateway-api/
+* Cert-Manager HTTP-01-Referenz (Ingress- und Gateway-API-Solver): https://cert-manager.io/docs/configuration/acme/http01/
+* Cert-Manager DNS-01-Referenz: https://cert-manager.io/docs/configuration/acme/dns01/
+* Cert-Manager Troubleshooting ACME: https://cert-manager.io/docs/troubleshooting/acme/
+* Offizieller Hetzner Cert-Manager-Webhook: https://github.com/hetzner/cert-manager-webhook-hetzner/blob/main/docs/guides/quickstart.md

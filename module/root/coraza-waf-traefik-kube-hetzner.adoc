@@ -1,0 +1,279 @@
+= Open-Source WAF für Traefik auf kube-hetzner: Coraza einrichten – von Ingress bis Gateway API
+:toc:
+:toclevels: 2
+:source-highlighter: rouge
+:icons: font
+
+Wer sein Kubernetes-Cluster mit https://github.com/mysticaltech/terraform-hcloud-kube-hetzner[terraform-hcloud-kube-hetzner] auf Hetzner Cloud betreibt, bekommt Traefik als Ingress-Controller direkt mitgeliefert. Was fehlt, ist eine Web Application Firewall (WAF) – also ein Schutzschild gegen SQL-Injection, XSS, Path Traversal & Co. auf Layer 7. Dieser Beitrag dokumentiert den kompletten Weg: von der Auswahl einer Open-Source-WAF über die Middleware-Konfiguration bis zur Frage, wie man das Ganze sauber mit der Kubernetes Gateway API (`HTTPRoute`) statt der klassischen `Ingress`/`IngressRoute`-Ressourcen kombiniert.
+
+[NOTE]
+====
+*Hinweis zur Ausgangslage:* kube-hetzner rollt Traefik über den offiziellen Traefik-Helm-Chart innerhalb des k3s-Clusters aus. Alles Folgende geht davon aus, dass Traefik v3.x läuft (Standard bei aktuellen kube-hetzner-Versionen) und dass ihr Zugriff auf die Traefik-Konfiguration eures Terraform-Setups habt (bei kube-hetzner typischerweise über die `traefik_values`-Variable oder eine eigene `HelmChartConfig`).
+====
+
+== Warum überhaupt eine WAF, und warum Coraza?
+
+Eine WAF unterscheidet sich von einer klassischen Netzwerk-Firewall dadurch, dass sie den *Inhalt* von HTTP-Requests prüft – Header, Query-Parameter, Body, URLs – statt nur IPs und Ports. Sie schützt gegen die üblichen Verdächtigen der https://owasp.org/www-project-top-ten/[OWASP Top 10]: SQL-Injection, Cross-Site-Scripting, Path Traversal, Remote Code Execution, SSRF.
+
+Für die Kombination mit Traefik auf Kubernetes kristallisierten sich in der Recherche zwei relevante Open-Source-Optionen heraus:
+
+[cols="1,2,2,2", options="header"]
+|===
+|WAF-Lösung |Funktionsweise |Vorteile |Nachteile
+
+|*Coraza (WASM-Plugin)*
+|Läuft als WASM-Modul direkt im Traefik-Prozess
+|Keine zusätzlichen Pods, native Traefik-Integration, ModSecurity-kompatibel
+|OWASP-CRS-Regeln nicht im WASM-Build gebündelt, jüngeres Projekt
+
+|*CrowdSec AppSec*
+|Traefik-Bouncer-Plugin für IP-Reputation und Verhaltenserkennung
+|Kollaborative Threat Intelligence, Community-Blocklisten
+|HTTP-Inspektion vergleichsweise neu, benötigt LAPI-Infrastruktur, kein vollständiger WAF-Ersatz
+|===
+
+https://coraza.io/[Coraza] ist ein Open-Source-Projekt unter dem Dach der OWASP Foundation, in Go geschrieben und eine moderne Neuimplementierung von ModSecurity. Für Kubernetes/Traefik spricht vor allem: Es läuft *in-process als WASM-Plugin*, ohne Sidecar, ohne zusätzliche Pods, mit rund 1–5 ms zusätzlicher Latenz und ~50m CPU pro Request – für ein ressourcenbewusstes Hetzner-Cluster ein klarer Pluspunkt. CrowdSec eignet sich als *Ergänzung* für IP-Reputation, ersetzt aber keine Payload-Inspektion.
+
+== Schritt 1: Coraza-Plugin in Traefik aktivieren
+
+k3s (und damit kube-hetzner) verwaltet Traefik über eine `HelmChartConfig`, die mit den Helm-Chart-Defaults gemergt wird. Zwei Dinge sind zu beachten:
+
+. Traefik läuft bei k3s mit `readOnlyRootFilesystem: true`. Das Coraza-Plugin lädt beim Start Dateien nach – dafür braucht es ein beschreibbares Volume unter `/plugins-storage`.
+. Der `kubernetesCRD`-Provider ist bei einer Helm-Chart-Installation von Traefik *standardmäßig bereits aktiviert* – das gilt auch für kube-hetzners Traefik-Deployment. Man muss ihn also nicht separat "einschalten", sondern lediglich seine Cross-Namespace-Option setzen (siehe unten).
+
+[source,yaml]
+----
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    additionalArguments:
+      - "--providers.kubernetescrd.allowCrossNamespace=true"
+      - "--experimental.plugins.coraza-http-wasm-traefik.modulename=github.com/jcchavezs/coraza-http-wasm-traefik"
+      - "--experimental.plugins.coraza-http-wasm-traefik.version=v0.3.0"
+
+    additionalVolumeMounts:
+      - name: plugins-storage
+        mountPath: /plugins-storage
+
+    deployment:
+      additionalVolumes:
+        - name: plugins-storage
+          emptyDir: {}
+----
+
+Die Plugin-Version (`v0.3.0`) ist die zum Zeitpunkt der Recherche aktuellste Version im https://github.com/jcchavezs/coraza-http-wasm-traefik/releases[GitHub-Repo von jcchavezs/coraza-http-wasm-traefik] – vor dem produktiven Einsatz lohnt sich ein Blick auf die Releases-Seite, ob es zwischenzeitlich eine neuere Version gibt.
+
+Nach dem Anwenden (`kubectl apply`, ~10–30 Sekunden Ingress-Downtime durch den Traefik-Neustart) lässt sich der Plugin-Load in den Logs prüfen:
+
+[source,bash]
+----
+kubectl logs -n kube-system -l app.kubernetes.io/name=traefik --tail=20 | grep -i plugin
+----
+
+== Schritt 2: Die WAF-Middleware definieren
+
+Coraza nutzt dieselbe `SecRule`-Direktivensprache wie ModSecurity. Wichtiger Fallstrick, der in der Recherche mehrfach bestätigt wurde: *Der WASM-Build von Coraza für Traefik bündelt das OWASP Core Rule Set (CRS) nicht mit.* `Include @owasp_crs/...` funktioniert hier also nicht – man schreibt die Regeln inline.
+
+[source,yaml]
+----
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: waf-coraza
+  namespace: kube-system
+spec:
+  plugin:
+    coraza-http-wasm-traefik:
+      directives:
+        - "SecRuleEngine DetectionOnly"
+        - "SecRequestBodyAccess On"
+        - "SecRequestBodyLimit 8388608"
+        - "SecResponseBodyAccess Off"
+
+        # Health-Checks ausnehmen (sonst Log-Flut durch k8s-Probes)
+        - 'SecRule REQUEST_URI "@rx ^/health(z|check)?$" "id:10001,phase:1,allow,nolog"'
+
+        # SQL Injection
+        - 'SecRule ARGS|ARGS_NAMES|REQUEST_BODY "@rx (?i)(\bunion\b.*\bselect\b|\bdrop\b.*\btable\b)" "id:20001,phase:2,log,deny,status:403,msg:''SQL Injection attempt''"'
+
+        # Cross-Site Scripting
+        - 'SecRule ARGS|ARGS_NAMES|REQUEST_BODY "@rx (?i)(<script[\s>]|javascript\s*:|on\w+\s*=)" "id:20101,phase:2,log,deny,status:403,msg:''XSS - script injection''"'
+
+        # Path Traversal
+        - 'SecRule REQUEST_URI|ARGS "@rx (\.\.\/|\.\.\\\\)" "id:20201,phase:1,log,deny,status:403,msg:''Path traversal attempt''"'
+----
+
+Zwei Design-Entscheidungen, die sich aus der Recherche ergeben haben:
+
+* *`SecRuleEngine DetectionOnly` als Start-Modus.* Die WAF loggt Treffer, blockiert aber nichts. Das ist die dokumentierte Best Practice, um vor dem scharfen Schalten erst einmal False Positives zu identifizieren – Produktionsbetriebe sollten hier 1–2 Wochen beobachten, bevor auf `SecRuleEngine On` umgestellt wird.
+* *Health-Check-Ausnahmen zuerst.* Kubernetes-Probes (`/healthz`, `/readyz` etc.) feuern konstant und würden sonst unnötig Log-Rauschen erzeugen.
+
+== Schritt 3: Middleware an Services binden – drei Wege
+
+Hier wird es interessant, denn je nachdem, welchen Routing-Mechanismus ihr in eurem kube-hetzner-Cluster nutzt, unterscheidet sich die Anbindung spürbar.
+
+=== Variante A: Kubernetes-`Ingress`
+
+Der klassische Weg über eine Annotation:
+
+[source,yaml]
+----
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: beispiel-app
+  namespace: default
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-waf-coraza@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: beispiel.example.com
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: beispiel-app
+                port:
+                  number: 8080
+----
+
+Format der Annotation: `<namespace>-<middleware-name>@kubernetescrd`. Das funktioniert cross-namespace, weil wir im ersten Schritt `allowCrossNamespace=true` gesetzt haben.
+
+=== Variante B: Traefiks natives `IngressRoute`
+
+[source,yaml]
+----
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: beispiel-app
+  namespace: default
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`beispiel.example.com`)
+      kind: Rule
+      middlewares:
+        - name: waf-coraza
+          namespace: kube-system
+      services:
+        - name: beispiel-app
+          port: 8080
+----
+
+`IngressRoute` unterstützt die Cross-Namespace-Referenz direkt über ein `namespace`-Feld in der Middleware-Referenz – hier ist nichts weiter zu beachten.
+
+=== Variante C: Gateway API `HTTPRoute` – der eigentlich interessante Fall
+
+Traefik unterstützt Middlewares in `HTTPRoute` über den `ExtensionRef`-Filter-Typ, der auf eine `traefik.io/v1alpha1 Middleware` verweist – dafür muss zusätzlich zum (standardmäßig aktiven) `kubernetesCRD`-Provider auch der `kubernetesGateway`-Provider aktiviert sein.
+
+Hier stößt man aber auf eine Einschränkung, die in der Praxis leicht übersehen wird: Der Gateway-API-Standard definiert `ExtensionRef` über den Typ `LocalObjectReference`, und der besitzt *kein `namespace`-Feld*. Eine direkte Cross-Namespace-Referenz wie bei `IngressRoute` ist damit *nicht möglich* – ein `HTTPRoute` kann nur Middlewares aus dem *eigenen* Namespace referenzieren. `ReferenceGrant`, der eigentlich für genau solche Fälle vorgesehene Gateway-API-Mechanismus, wird von Traefik für `ExtensionRef`/Middleware nach Stand der Recherche (Anfang 2026) noch nicht unterstützt.
+
+Der dokumentierte Workaround: eine lokale *Chain-Middleware als Delegate*. Man legt im Namespace der App eine kleine Chain-Middleware an, die – weil `Chain` das `namespace`-Feld unterstützt – auf die zentrale WAF-Middleware in `kube-system` verweist. Der `HTTPRoute` referenziert dann nur noch diese lokale Delegate-Middleware.
+
+[source,yaml]
+----
+# Delegate-Middleware im App-Namespace (hier: "default")
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: waf-coraza-delegate
+  namespace: default
+spec:
+  chain:
+    middlewares:
+      - name: waf-coraza
+        namespace: kube-system
+
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: beispiel-app
+  namespace: default
+spec:
+  parentRefs:
+    - name: traefik-gateway
+      namespace: kube-system
+      sectionName: websecure
+  hostnames:
+    - beispiel.example.com
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: waf-coraza-delegate
+      backendRefs:
+        - name: beispiel-app
+          port: 8080
+----
+
+Der Trick: Der `HTTPRoute` "sieht" nur eine lokale Middleware. Diese Chain-Middleware nutzt Traefiks natives Cross-Namespace-Feature (das nur bei `Chain` und `IngressRoute` existiert, nicht bei `ExtensionRef` selbst), um auf die eigentliche WAF-Logik in `kube-system` zu delegieren. Nachteil dieses Patterns: Man braucht pro App-Namespace eine solche Delegate-Middleware – etwas Boilerplate, aber die einzige dokumentierte Lösung ohne Middleware-Duplizierung.
+
+[IMPORTANT]
+.Vor dem produktiven Einsatz zu prüfen
+====
+* Ob `providers.kubernetesGateway.enabled: true` in eurer Traefik-Konfiguration tatsächlich gesetzt ist (Voraussetzung für `ExtensionRef`-Middleware-Support).
+* Ob eine neuere Traefik-Version den `ReferenceGrant`-Mechanismus für `ExtensionRef` inzwischen unterstützt – das würde den Chain-Workaround überflüssig machen.
+====
+
+== Testen
+
+Im `DetectionOnly`-Modus blockiert nichts, aber Regel-Treffer werden geloggt:
+
+[source,bash]
+----
+# SQL Injection
+curl -s -o /dev/null -w "%{http_code}" "https://beispiel.example.com/?id=1%20UNION%20SELECT%20username,password%20FROM%20users"
+
+# XSS
+curl -s -o /dev/null -w "%{http_code}" "https://beispiel.example.com/?q=<script>alert('xss')</script>"
+
+# Path Traversal
+curl -s -o /dev/null -w "%{http_code}" "https://beispiel.example.com/?file=../../../etc/passwd"
+----
+
+Legitime Requests sollten weiterhin normal durchgehen – das ist der eigentliche Sinn der Detection-Only-Phase.
+
+== Reporting: Was es gibt – und was nicht
+
+Ein Punkt, der in der Recherche für Ernüchterung sorgte: *Es gibt kein fertiges Reporting-Dashboard* für die Kombination Traefik + `coraza-http-wasm-traefik`. Was tatsächlich zur Verfügung steht:
+
+* Traefik-Logs direkt durchsuchen: `kubectl logs -n kube-system -l app.kubernetes.io/name=traefik | grep -i "coraza|waf|SecRule"`
+* Bei vorhandenem Loki/Promtail: LogQL-Abfragen wie `{app="traefik"} |= "coraza"` bzw. mit `|= "deny"` für geblockte Requests, darauf aufbauend ein selbstgebautes Grafana-Dashboard.
+
+Für das Coraza-Envoy-Pendant (`coraza-proxy-wasm`) existieren zwar Prometheus-Metriken (`waf_filter_*`), diese zählen laut einem offenen GitHub-Issue aber aktuell nur blockierte Transaktionen, nicht jede einzelne getriggerte Regel – und es ist nicht bestätigt, ob das Traefik-Plugin dieselben Metriken exportiert. Wer belastbares Reporting will, kommt derzeit nicht um eine eigene Loki/Grafana-Pipeline herum, die die Coraza-Log-Zeilen parst.
+
+== Fazit
+
+Für ein kube-hetzner-Cluster mit Traefik ist Coraza als WASM-Plugin die pragmatischste Open-Source-WAF-Lösung: keine zusätzlichen Pods, ModSecurity-kompatible Regelsprache, überschaubarer Ressourcen-Overhead. Der Haken liegt nicht in Coraza selbst, sondern in zwei Nebenschauplätzen: dem fehlenden OWASP-CRS-Bundling im WASM-Build (→ inline-Regeln nötig) und der Cross-Namespace-Limitierung von `HTTPRoute`/`ExtensionRef` (→ Chain-Middleware-Delegate als Workaround). Wer zusätzlich IP-Reputation und Bot-Blocking will, kann CrowdSec als zweite, unabhängige Schicht vor Coraza schalten.
+
+== Quellen
+
+* https://citizix.com/how-to-setup-coraza-waf-with-traefik-on-k3s-kubernetes/[Coraza WAF Setup mit Traefik auf k3s – citizix.com]
+* https://github.com/jcchavezs/coraza-http-wasm-traefik/releases[coraza-http-wasm-traefik – GitHub Releases]
+* https://github.com/traefik/traefik/blob/master/docs/content/reference/routing-configuration/kubernetes/gateway-api.md[Traefik-Doku: Gateway API / ExtensionRef]
+* https://doc.traefik.io/traefik/reference/install-configuration/providers/kubernetes/kubernetes-crd/[Traefik-Doku: Kubernetes CRD Provider]
+* https://medium.com/@nsalexamy/cross-namespace-middleware-reference-with-traefik-for-ingressroute-and-httproute-c23f5b3a1891[Cross-Namespace Middleware Reference mit Traefik – Medium (Young Gyu Kim)]
+* https://www.crowdsec.net/blog/secure-kubernetes-ingress-with-crowdsec-and-traefik-devsecops-at-scale[CrowdSec & Traefik für Kubernetes Ingress]
+* https://wafplanet.com/waf/coraza/[Coraza WAF Review – WAFPlanet]
+* https://github.com/mysticaltech/terraform-hcloud-kube-hetzner[terraform-hcloud-kube-hetzner – GitHub]
+
+'''
+
+_Stand der Recherche: September 2026. Vor dem produktiven Einsatz insbesondere die Plugin-Version, den Support-Status von `ReferenceGrant` für `ExtensionRef` sowie eure konkrete Traefik-Provider-Konfiguration gegenprüfen – Traefik entwickelt sich in diesem Bereich schnell weiter._
