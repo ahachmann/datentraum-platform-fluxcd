@@ -4,6 +4,7 @@ metadata:
   name: prometheus-stack
 resources:
   - prometheus-helm.yaml
+  - rules
 configMapGenerator:
   - name: prometheus-values
     namespace: monitoring

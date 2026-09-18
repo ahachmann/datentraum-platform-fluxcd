@@ -1,3 +1,8 @@
+## Die Default-Rules des Charts sind nach base/monitoring/prometheus-stack/rules/
+## vendored (eigene PrometheusRule-Objekte) - daher hier abgeschaltet.
+defaultRules:
+  create: false
+
 ## Using default values from https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
 ##
 grafana:
