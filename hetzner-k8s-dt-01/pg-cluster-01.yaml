@@ -48,6 +48,14 @@ metadata:
 spec:
   itemPath: "vaults/DT-Infra/items/Nextcloud Datenbank"
 ---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: pg-financials-secret
+  namespace: pg-cluster
+spec:
+  itemPath: "vaults/DT-Infra/items/Financials Datenbank"
+---
 apiVersion: barmancloud.cnpg.io/v1
 kind: ObjectStore
 metadata:
@@ -107,6 +115,12 @@ spec:
                 createdb: false
                 passwordSecret:
                   name: pg-nextcloud-secret
+              - name: financials
+                login: true
+                ensure: present
+                createdb: false
+                passwordSecret:
+                  name: pg-financials-secret
       target:
         kind: Cluster
         name: pg-cluster-01
@@ -153,6 +167,17 @@ metadata:
 spec:
   name: nextcloud
   owner: nextcloud
+  cluster:
+    name: pg-cluster-01
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: financials-database
+  namespace: pg-cluster
+spec:
+  name: financials
+  owner: financials
   cluster:
     name: pg-cluster-01
 
