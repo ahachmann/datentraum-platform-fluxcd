@@ -191,6 +191,28 @@ java -cp freemarker-2.3.34.jar Render.java cvo/email de
 
 Alternativ direkt im Cluster: Passwort-Reset in der Account-Konsole auslösen.
 
+
+Ohne laufenden Keycloak lassen sich alle Mails gegen Testdaten rendern – der
+schnellste Weg, Layout-, Syntax- und Platzhalterfehler zu finden:
+
+```bash
+./hack/keycloak-mail-preview/preview.sh            # DE + EN, öffnet die Galerie im Browser
+./hack/keycloak-mail-preview/preview.sh --no-open  # nur rendern, Exit-Code != 0 bei Fehlern
+./hack/keycloak-mail-preview/preview.sh de         # nur eine Sprache
+```
+
+Das Skript lädt FreeMarker einmalig nach `~/.cache/keycloak-mail-preview/`, rendert
+HTML- **und** Text-Variante je Sprache nach `hack/keycloak-mail-preview/.preview/`
+(gitignored) und baut eine `index.html` mit Umschaltern für Mail, Sprache, Format und
+Desktop-/Mobilbreite. Testdaten (Link, Ablaufzeit, Realm, User, Required Actions) stehen
+in `hack/keycloak-mail-preview/Render.java` → `model(...)`.
+
+Fehlende Message-Keys erscheinen in der Vorschau als `??keyName??`, statt still
+leer zu bleiben.
+
+Echte Zustellung testen: **Realm Settings → Email → Test connection** (rendert
+`email-test.ftl`) oder einen Passwort-Reset in der Account-Konsole auslösen.
+
 ## Getestete Keycloak-Versionen
 
 - Keycloak 21.x
