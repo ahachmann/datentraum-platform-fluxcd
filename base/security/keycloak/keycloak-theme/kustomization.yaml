@@ -21,3 +21,41 @@ configMapGenerator:
       disableNameSuffixHash: true
     files:
       - login.css=cvo/login/resources/css/login.css
+  - name: kc-theme-cvo-email
+    options:
+      disableNameSuffixHash: true
+      annotations:
+        kustomize.toolkit.fluxcd.io/substitute: "false"
+    files:
+      - theme.properties=cvo/email/theme.properties
+  - name: kc-theme-cvo-email-html
+    options:
+      disableNameSuffixHash: true
+      annotations:
+        kustomize.toolkit.fluxcd.io/substitute: "false"
+    files:
+      - template.ftl=cvo/email/html/template.ftl
+      - password-reset.ftl=cvo/email/html/password-reset.ftl
+      - email-verification.ftl=cvo/email/html/email-verification.ftl
+      - executeActions.ftl=cvo/email/html/executeActions.ftl
+      - email-update-confirmation.ftl=cvo/email/html/email-update-confirmation.ftl
+      - email-test.ftl=cvo/email/html/email-test.ftl
+  - name: kc-theme-cvo-email-text
+    options:
+      disableNameSuffixHash: true
+      annotations:
+        kustomize.toolkit.fluxcd.io/substitute: "false"
+    files:
+      - password-reset.ftl=cvo/email/text/password-reset.ftl
+      - email-verification.ftl=cvo/email/text/email-verification.ftl
+      - executeActions.ftl=cvo/email/text/executeActions.ftl
+      - email-update-confirmation.ftl=cvo/email/text/email-update-confirmation.ftl
+      - email-test.ftl=cvo/email/text/email-test.ftl
+  - name: kc-theme-cvo-email-messages
+    options:
+      disableNameSuffixHash: true
+      annotations:
+        kustomize.toolkit.fluxcd.io/substitute: "false"
+    files:
+      - messages_de.properties=cvo/email/messages/messages_de.properties
+      - messages_en.properties=cvo/email/messages/messages_en.properties

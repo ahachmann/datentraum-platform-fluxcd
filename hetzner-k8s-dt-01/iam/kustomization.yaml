@@ -25,6 +25,18 @@ patches:
           - name: theme-cvo-img
             configMap:
               name: kc-theme-cvo-img
+          - name: theme-cvo-email
+            configMap:
+              name: kc-theme-cvo-email
+          - name: theme-cvo-email-html
+            configMap:
+              name: kc-theme-cvo-email-html
+          - name: theme-cvo-email-text
+            configMap:
+              name: kc-theme-cvo-email-text
+          - name: theme-cvo-email-messages
+            configMap:
+              name: kc-theme-cvo-email-messages
   - target:
       kind: StatefulSet
       name: keycloak
@@ -43,6 +55,18 @@ patches:
             readOnly: true
           - name: theme-cvo-img
             mountPath: /opt/keycloak/themes/cvo/login/resources/img
+            readOnly: true
+          - name: theme-cvo-email
+            mountPath: /opt/keycloak/themes/cvo/email
+            readOnly: true
+          - name: theme-cvo-email-html
+            mountPath: /opt/keycloak/themes/cvo/email/html
+            readOnly: true
+          - name: theme-cvo-email-text
+            mountPath: /opt/keycloak/themes/cvo/email/text
+            readOnly: true
+          - name: theme-cvo-email-messages
+            mountPath: /opt/keycloak/themes/cvo/email/messages
             readOnly: true
       - op: replace
         path: /spec/template/spec/containers/0/image
