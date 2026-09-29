@@ -42,4 +42,42 @@ patches:
                     - grafana.datentraum.de
             alertmanager:
               enabled: true
+          alertmanager:
+            alertmanagerSpec:
+              ## 1Password-Secret in den Alertmanager-Pod mounten:
+              ## /etc/alertmanager/secrets/alertmanager-pushover/{user_key,token}
+              secrets:
+                - alertmanager-pushover
+            config:
+              route:
+                group_by: ["namespace", "alertname"]
+                group_wait: 30s
+                group_interval: 5m
+                repeat_interval: 12h
+                receiver: "pushover"
+                routes:
+                  - receiver: "null"
+                    matchers:
+                      - alertname = "Watchdog"
+                  - receiver: "null"
+                    matchers:
+                      - alertname = "KubeletDown"
+                  - receiver: "null"
+                    matchers:
+                      - alertname = "KubeAPIDown"
+              receivers:
+                - name: "null"
+                - name: "pushover"
+                  pushover_configs:
+                    - user_key_file: /etc/alertmanager/secrets/alertmanager-pushover/user_key
+                      token_file: /etc/alertmanager/secrets/alertmanager-pushover/token
+                      send_resolved: true
+                      priority: '{{ if eq .Status "firing" }}1{{ else }}0{{ end }}'
+                      title: '{{ .Status | toUpper }}{{ if eq .Status "firing" }} ({{ .Alerts.Firing | len }}){{ end }} {{ .CommonLabels.alertname }}'
+                      message: |-
+                        {{ range .Alerts }}{{ .Annotations.summary }}
+                        {{ .Annotations.description }}
+                        {{ end }}
+                      url: https://grafana.datentraum.de/alerting/list
+                      url_title: In Grafana oeffnen
 
