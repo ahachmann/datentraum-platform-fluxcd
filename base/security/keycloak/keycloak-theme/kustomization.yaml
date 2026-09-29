@@ -6,10 +6,18 @@ configMapGenerator:
   - name: kc-theme-cvo-login
     options:
       disableNameSuffixHash: true
+      annotations:
+        kustomize.toolkit.fluxcd.io/substitute: "false"
     files:
       - login.ftl=cvo/login/login.ftl
       - template.ftl=cvo/login/template.ftl
       - theme.properties=cvo/login/theme.properties
+      - login-reset-password.ftl=cvo/login/login-reset-password.ftl
+      - login-update-password.ftl=cvo/login/login-update-password.ftl
+      - login-verify-email.ftl=cvo/login/login-verify-email.ftl
+      - login-page-expired.ftl=cvo/login/login-page-expired.ftl
+      - info.ftl=cvo/login/info.ftl
+      - error.ftl=cvo/login/error.ftl
   - name: kc-theme-cvo-messages
     options:
       disableNameSuffixHash: true

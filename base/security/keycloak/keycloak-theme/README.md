@@ -7,9 +7,15 @@ Custom Keycloak Login- und E-Mail-Theme für das **Carl von Ossietzky Gymnasium 
 ```
 cvo/
 ├── login/
-│   ├── theme.properties          # Theme-Konfiguration
-│   ├── login.ftl                 # Haupt-Login-Template
-│   ├── template.ftl              # HTML-Layout-Wrapper
+│   ├── theme.properties          # parent=keycloak, styles, kc*Class-Overrides
+│   ├── template.ftl              # gemeinsamer Rahmen: Karte, Logo, Titel, Meldung, Footer
+│   ├── login.ftl                 # Anmeldung
+│   ├── login-reset-password.ftl  # Passwort vergessen
+│   ├── login-update-password.ftl # Neues Passwort vergeben
+│   ├── login-verify-email.ftl    # E-Mail-Adresse bestätigen
+│   ├── login-page-expired.ftl    # Seite abgelaufen
+│   ├── info.ftl                  # generische Infoseite
+│   ├── error.ftl                 # Fehlerseite
 │   ├── messages/
 │   │   ├── messages_de.properties
 │   │   └── messages_en.properties
@@ -130,11 +136,120 @@ Empfehlung: Theme als OCI-Image packen und als Init-Container deployen (Keycloak
 | Farben (Login) | `login/resources/css/login.css` → CSS-Variablen in `:root {}` |
 | Logo | `login/resources/img/logo.jpg` ersetzen |
 | Texte Login (DE/EN) | `login/messages/messages_{de,en}.properties` |
-| Layout / Felder Login | `login/login.ftl` |
+| Layout Login (alle Seiten) | `login/template.ftl` |
+| Felder der Anmeldeseite | `login/login.ftl` |
 | Farben (E-Mail) | `email/html/template.ftl` → `<#assign cvo... >` am Dateianfang |
 | Texte E-Mail (DE/EN) | `email/messages/messages_{de,en}.properties` |
 | Layout E-Mail | `email/html/template.ftl` (Makros `emailLayout`, `button`, `p`, `muted`, `divider`, `linkFallback`) |
 | Neue Sprache | `messages_XX.properties` in `login/messages/` bzw. `email/messages/` anlegen **und** in `kustomization.yaml` als ConfigMap-Datei eintragen |
+
+---
+
+## Login-Theme
+
+### Seitenaufbau
+
+`template.ftl` ist der gemeinsame Rahmen aller Anmeldeseiten: Karte, Logo,
+Seitentitel, Meldungsblock und Footer. Die einzelnen Seiten liefern nur ihren
+Inhalt über die Abschnitte `header`, `form` und `info`.
+
+Überschrieben und gebrandet sind:
+
+| Datei | Seite |
+|---|---|
+| `login.ftl` | Anmeldung |
+| `login-reset-password.ftl` | Passwort vergessen |
+| `login-update-password.ftl` | Neues Passwort vergeben |
+| `login-verify-email.ftl` | E-Mail-Adresse bestätigen |
+| `login-page-expired.ftl` | Seite abgelaufen |
+| `info.ftl` | generische Infoseite („E-Mail wurde gesendet") |
+| `error.ftl` | Fehlerseite |
+
+Alles andere (OTP, Passkey, Recovery-Codes, Profil vervollständigen,
+Nutzungsbedingungen, Auswahl des zweiten Faktors) kommt aus dem Elternthema.
+
+### parent=keycloak, nicht base
+
+`theme.properties` hat bewusst `parent=keycloak`. Das Elternthema liefert die
+`kc*Class`-Properties (`kcInputClass=pf-c-form-control`, `kcButtonClass=pf-c-button` …).
+Mit `parent=base` wären diese Properties leer, und jede nicht überschriebene Seite
+käme mit `class=""` im Markup – also komplett ungestylt. `login.css` bedient die
+PatternFly-Klassennamen deshalb direkt (`.card-pf`, `.pf-c-form-control`,
+`.pf-c-button.pf-m-primary`, `.btn-default` …).
+
+Das PatternFly-**CSS** wird trotzdem nicht geladen: `template.ftl` rendert nur
+`properties.styles`, nicht `stylesCommon`. Die geerbten Seiten bleiben damit in
+der CVO-Formensprache statt im Keycloak-Standardlook.
+
+`meta=` steht absichtlich leer in `theme.properties` – das Elternthema setzt dort
+ein viewport-Meta, das `template.ftl` ohnehin selbst ausgibt.
+
+### Texte
+
+Message-Keys werden über die Kette cvo → keycloak → base aufgelöst; `messages_de.properties`
+überschreibt nur, was abweichen soll. Das betrifft vor allem die Anrede: Keycloaks
+deutsche Standardtexte siezen, das CVO-Theme duzt durchgängig.
+
+> **Achtung bei HTML-Entities:** Templates laufen mit aktivem Auto-Escaping. Ein
+> `&laquo;` in einer Properties-Datei erscheint als Text „&laquo;" auf der Seite –
+> deshalb stehen echte Zeichen (`«`, `»`, `–`) in den Messages.
+
+### Lokal rendern / Vorschau
+
+```bash
+./hack/keycloak-login-preview/preview.sh            # DE + EN, öffnet die Galerie im Browser
+./hack/keycloak-login-preview/preview.sh --no-open  # nur rendern, Exit-Code != 0 bei Fehlern
+./hack/keycloak-login-preview/preview.sh de         # nur eine Sprache
+```
+
+Rendert alle überschriebenen Seiten in Zuständen, die man sonst nur mit Mühe im
+laufenden Keycloak provoziert – 21 Kombinationen je Sprache:
+
+| Seite | Szenarien |
+|---|---|
+| Anmeldung | Standard · die vier Alert-Stile · vorausgefüllt · E-Mail als Benutzername · Realm ohne Self-Service |
+| Passwort vergessen | Standard · Feldfehler · Realm ohne E-Mail-Login |
+| Neues Passwort | Standard · Feldfehler (Bestätigung weicht ab) · aus der Account-Konsole (mit Abbrechen) |
+| E-Mail bestätigen | Standard · aus der Account-Konsole |
+| Infoseite | „E-Mail gesendet" · mit offenen Required Actions |
+| Fehlerseite | Standard · mit Trace-ID |
+| Seite abgelaufen | Standard |
+
+Umschalter für Sprache und Viewport (Desktop / Tablet / Mobil) – letzteres trifft
+den `@media (max-width: 480px)`-Breakpoint in `login.css`. `resources/` wird in die
+Vorschau kopiert, Logo und CSS sind also echt.
+
+Das Tool bildet die Theme-Kette nach: es lädt `keycloak-themes-<version>.jar` von
+Maven Central nach `~/.cache/keycloak-mail-preview/` und löst Templates,
+`theme.properties` und Messages in der Reihenfolge cvo → keycloak → base auf.
+Ein `<#import>` auf eine geerbte Datei funktioniert damit genauso wie im Server.
+Die Keycloak-Version steuert `KEYCLOAK_VERSION` (Default: passend zum StatefulSet).
+
+FreeMarker läuft exakt wie in Keycloaks `DefaultFreeMarkerProvider`
+(`HTMLOutputFormat`, `VERSION_2_3_32`), damit das Auto-Escaping dem Server entspricht.
+Testdaten und Szenarien stehen in `hack/keycloak-login-preview/Render.java` →
+`PAGES` und `model(...)`; `MessagesPerField` ist dort als Mock von Keycloaks
+`MessagesPerFieldBean` nachgebaut.
+
+Fehlende Message-Keys erscheinen als `??keyName??` statt still leer zu bleiben.
+
+### Grenze der Vorschau
+
+Die nicht überschriebenen Seiten (OTP, Passkey, Profil vervollständigen …) rendert
+das Tool nicht. Sie hängen am User-Profile-Framework und an Beans, deren Mock mehr
+verspräche als er halten kann. Ansehen lassen sie sich in einem Wegwerf-Keycloak
+mit gemountetem Theme:
+
+```bash
+podman run --rm -p 8080:8080 \
+  -e KC_BOOTSTRAP_ADMIN_USERNAME=admin -e KC_BOOTSTRAP_ADMIN_PASSWORD=admin \
+  -v "$PWD/base/security/keycloak/keycloak-theme/cvo:/opt/keycloak/themes/cvo:ro,z" \
+  quay.io/keycloak/keycloak:26.7.2 start-dev
+```
+
+Dann auf `http://localhost:8080` → Realm anlegen → Realm settings → Themes →
+Login theme `cvo`. Im `start-dev`-Modus lädt Keycloak Theme-Änderungen ohne
+Neustart nach, ein Reload im Browser genügt.
 
 ---
 

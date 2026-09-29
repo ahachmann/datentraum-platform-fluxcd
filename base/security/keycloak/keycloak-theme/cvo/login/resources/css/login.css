@@ -136,7 +136,6 @@ input[type="email"]:focus {
 }
 
 /* ── Forgot password link ── */
-#kc-info-message,
 .login-pf-accounts .forgot-pw,
 a#forgot-password,
 .pf-c-form__helper-text a {
@@ -212,7 +211,7 @@ button[type="submit"]:hover {
 }
 
 /* ── Footer ── */
-#kc-info,
+.kc-footer,
 .login-pf-footer,
 .login-pf-signup {
   margin-top: 1.5rem;
@@ -286,4 +285,152 @@ button[type="submit"]:hover {
     align-items: flex-start;
     padding: 1rem;
   }
+}
+
+
+/* ── Seiteninhalte der geerbten/überschriebenen Seiten ── */
+
+/* Erklärtext über einem Formular (Passwort vergessen, E-Mail bestätigen ...) */
+.instruction,
+#kc-info-message .instruction,
+#kc-error-message .instruction {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--cvo-text-secondary);
+  text-align: left;
+  margin: 0 0 1.25rem;
+}
+
+/* Info- und Fehlerseite */
+#kc-info-message,
+#kc-error-message {
+  text-align: left;
+  margin-bottom: 0.5rem;
+}
+
+#kc-error-message .instruction {
+  color: #991b1b;
+}
+
+.trace-id {
+  font-size: 11px;
+  color: var(--cvo-text-muted);
+  word-break: break-all;
+}
+
+/* Feldbezogene Validierungsmeldung unter einem Eingabefeld */
+.field-error,
+.pf-c-form__helper-text.pf-m-error {
+  display: block;
+  font-size: 12px;
+  color: #991b1b;
+  margin-top: 4px;
+}
+
+/* Linkzeile unter einem Formular (Zurück zur Anmeldung ...) */
+.kc-form-links {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.kc-form-links a {
+  font-size: 12px;
+  color: var(--cvo-blue);
+  text-decoration: none;
+}
+
+.kc-form-links a:hover {
+  text-decoration: underline;
+}
+
+/* Info-Abschnitt, den das Layout unter dem Formular ausgibt */
+#kc-info {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 0.5px solid #d1d5db;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--cvo-text-muted);
+  text-align: center;
+}
+
+#kc-info a {
+  color: var(--cvo-blue);
+  text-decoration: none;
+}
+
+#kc-info a:hover {
+  text-decoration: underline;
+}
+
+/* Sekundärer Button (Abbrechen) */
+.btn.btn-secondary,
+.pf-c-button.btn-default,
+button[name="cancel-aia"] {
+  width: 100%;
+  height: 40px;
+  margin-top: 8px;
+  background: var(--cvo-white);
+  color: var(--cvo-text-secondary);
+  border: 0.5px solid var(--cvo-border);
+  border-radius: var(--cvo-radius);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  box-sizing: border-box;
+}
+
+.btn.btn-secondary:hover,
+.pf-c-button.btn-default:hover,
+button[name="cancel-aia"]:hover {
+  background: var(--cvo-input-bg);
+}
+
+/* Geerbte Seiten (OTP, Passkey, Profil ...): PatternFly-Klassen ohne
+   PatternFly-CSS - hier die Haken, die das Markup tatsächlich setzt. */
+.pf-c-form-control,
+select.form-control {
+  width: 100%;
+  height: 38px;
+  border: 0.5px solid var(--cvo-border);
+  border-radius: var(--cvo-radius);
+  padding: 0 12px;
+  font-size: 14px;
+  color: var(--cvo-text);
+  background: var(--cvo-input-bg);
+  box-sizing: border-box;
+}
+
+.pf-c-form__label,
+.pf-c-form__label-text {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--cvo-text-secondary);
+  margin-bottom: 4px;
+}
+
+.pf-c-button.pf-m-primary {
+  width: 100%;
+  height: 40px;
+  background: var(--cvo-blue);
+  color: var(--cvo-white);
+  border: none;
+  border-radius: var(--cvo-radius);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.pf-c-button.pf-m-primary:hover {
+  background: var(--cvo-blue-dark);
+}
+
+/* Listen, z. B. Auswahl des zweiten Faktors */
+ul.pf-c-list,
+#kc-select-credential-form ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }

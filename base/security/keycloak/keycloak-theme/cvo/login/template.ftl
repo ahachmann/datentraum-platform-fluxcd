@@ -1,3 +1,9 @@
+<#--
+  CVO Login Theme - gemeinsames Layout aller Anmeldeseiten.
+  Karte, Logo, Seitentitel, Meldungsblock und Footer stehen hier, damit die
+  einzelnen Seiten (login.ftl, login-reset-password.ftl, ...) nur noch ihr
+  Formular beisteuern.
+-->
 <#macro registrationLayout bodyClass="" displayInfo=false displayMessage=true displayWide=false displayRequiredFields=false>
 <!DOCTYPE html>
 <html class="${properties.kcHtmlClass!}">
@@ -36,14 +42,53 @@
     </#if>
 </head>
 
-<body class="${properties.kcBodyClass!}">
+<body class="${properties.kcBodyClass!}<#if bodyClass?has_content> ${bodyClass}</#if>">
     <div class="${properties.kcLoginClass!}">
         <div id="kc-container">
-            <#nested "header">
-            <#nested "form">
-            <#if displayInfo>
-                <#nested "info">
-            </#if>
+            <div id="kc-form-wrapper">
+
+                <!-- Logo & Schulname -->
+                <div id="kc-header">
+                    <div id="kc-header-wrapper">
+                        <img src="${url.resourcesPath}/img/logo.jpg" alt="CVO Logo" />
+                        <span class="kc-logo-subtitle">Carl von Ossietzky Gymnasium</span>
+                    </div>
+                </div>
+
+                <!-- Seitentitel -->
+                <div id="kc-page-title">
+                    <#nested "header">
+                </div>
+
+                <!-- Fehler- / Infomeldung -->
+                <#if displayMessage && message?? && message.summary?has_content>
+                    <div class="alert alert-${message.type}">
+                        <#if message.type = 'warning'><span class="pficon pficon-warning-triangle-o" aria-hidden="true"></span></#if>
+                        <#if message.type = 'error'><span class="pficon pficon-error-circle-o" aria-hidden="true"></span></#if>
+                        <#if message.type = 'success'><span class="pficon pficon-ok" aria-hidden="true"></span></#if>
+                        <#if message.type = 'info'><span class="pficon pficon-info" aria-hidden="true"></span></#if>
+                        <span class="kc-feedback-text">${kcSanitize(message.summary)?no_esc}</span>
+                    </div>
+                </#if>
+
+                <#nested "form">
+
+                <#if displayInfo>
+                    <div id="kc-info">
+                        <#nested "info">
+                    </div>
+                </#if>
+
+                <!-- Footer -->
+                <div class="kc-footer">
+                    <p>Geschützter Bereich &ndash; nur für autorisierte Nutzer</p>
+                    <div class="kc-badge">
+                        <span class="kc-dot"></span>
+                        Gesichert durch Keycloak
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 </body>
