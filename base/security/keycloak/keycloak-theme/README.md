@@ -141,6 +141,7 @@ Empfehlung: Theme als OCI-Image packen und als Init-Container deployen (Keycloak
 | Farben (E-Mail) | `email/html/template.ftl` → `<#assign cvo... >` am Dateianfang |
 | Texte E-Mail (DE/EN) | `email/messages/messages_{de,en}.properties` |
 | Layout E-Mail | `email/html/template.ftl` (Makros `emailLayout`, `button`, `p`, `muted`, `divider`, `linkFallback`) |
+| Link auf der Abschlussseite | `login/theme.properties` → `cvoAfterActionUrl` |
 | Neue Sprache | `messages_XX.properties` in `login/messages/` bzw. `email/messages/` anlegen **und** in `kustomization.yaml` als ConfigMap-Datei eintragen |
 
 ---
@@ -167,6 +168,44 @@ Inhalt über die Abschnitte `header`, `form` und `info`.
 
 Alles andere (OTP, Passkey, Recovery-Codes, Profil vervollständigen,
 Nutzungsbedingungen, Auswahl des zweiten Faktors) kommt aus dem Elternthema.
+
+### Link auf der Abschlussseite
+
+Nach einem abgeschlossenen Action-Flow (Einladung, Passwort setzen …) landet der
+Nutzer auf `info.ftl` – `AuthenticationManager.finishedRequiredActions()` setzt
+dort `messageHeader=accountUpdatedTitle` und `accountUpdatedMessage`.
+
+Ob die Seite einen weiterführenden Link hat, entscheidet Keycloak:
+
+```java
+if (authSession.getAuthNote(SET_REDIRECT_URI_AFTER_REQUIRED_ACTIONS) != null) {
+    // -> pageRedirectUri
+} else {
+    SystemClientUtil.checkSkipLink(...);   // -> skipLink, kein Link
+}
+```
+
+Ohne `redirect_uri` im Flow ist die Seite also eine Sackgasse. Zwei Wege zum Link:
+
+**1. `redirect_uri` beim Verschicken mitgeben** – der von Keycloak vorgesehene Weg.
+Die Mail mit `client_id` + `redirect_uri` auslösen (siehe „Einladungsmail"), dann
+rendert `info.ftl` „« Zurück zur Anwendung". Die URL muss beim angegebenen Client
+als Redirect-URI eingetragen sein, sonst verwirft Keycloak sie. Über den
+**Send email**-Button der Admin-Konsole geht das nicht – nur per API.
+
+**2. Festes Ziel im Theme** – greift immer, auch bei `skipLink`:
+
+```properties
+# cvo/login/theme.properties
+cvoAfterActionUrl=https://iam.cvo-elternrat.de/realms/cvo/account/
+```
+
+Beschriftung über `cvoAfterActionLink` in `messages_{de,en}.properties`. Leeres
+`cvoAfterActionUrl` (Default) = kein Link, Verhalten wie vorher.
+
+Die Reihenfolge in `info.ftl`: `pageRedirectUri` → `actionUri` → `client.baseUrl`
+→ `properties.cvoAfterActionUrl`. Die ersten drei nur, solange Keycloak kein
+`skipLink` gesetzt hat; der eigene Fallback steht bewusst außerhalb dieser Prüfung.
 
 ### parent=keycloak, nicht base
 
@@ -203,7 +242,7 @@ deutsche Standardtexte siezen, das CVO-Theme duzt durchgängig.
 ```
 
 Rendert alle überschriebenen Seiten in Zuständen, die man sonst nur mit Mühe im
-laufenden Keycloak provoziert – 21 Kombinationen je Sprache:
+laufenden Keycloak provoziert – 24 Kombinationen je Sprache:
 
 | Seite | Szenarien |
 |---|---|
@@ -211,7 +250,7 @@ laufenden Keycloak provoziert – 21 Kombinationen je Sprache:
 | Passwort vergessen | Standard · Feldfehler · Realm ohne E-Mail-Login |
 | Neues Passwort | Standard · Feldfehler (Bestätigung weicht ab) · aus der Account-Konsole (mit Abbrechen) |
 | E-Mail bestätigen | Standard · aus der Account-Konsole |
-| Infoseite | „E-Mail gesendet" · mit offenen Required Actions |
+| Infoseite | „E-Mail gesendet" · mit offenen Required Actions · Landeseite nach dem Action-Flow in drei Link-Zuständen (ohne Link · `redirect_uri` · `cvoAfterActionUrl`) |
 | Fehlerseite | Standard · mit Trace-ID |
 | Seite abgelaufen | Standard |
 
@@ -267,7 +306,7 @@ Zusätzlich muss unter **Realm Settings → Email** ein SMTP-Server konfiguriert
 |---|---|
 | `password-reset.ftl` | Passwort vergessen |
 | `email-verification.ftl` | E-Mail-Adresse bestätigen (Registrierung) |
-| `executeActions.ftl` | Required Actions, z. B. „Passwort aktualisieren" per Admin ausgelöst |
+| `executeActions.ftl` | Required Actions per Admin ausgelöst – **doppelte Tonlage**, siehe unten |
 | `email-update-confirmation.ftl` | Bestätigung einer geänderten E-Mail-Adresse |
 | `email-test.ftl` | SMTP-Testmail aus der Admin-Konsole |
 
@@ -276,6 +315,41 @@ das Theme von `parent=base`. Sie laufen durch denselben CVO-Rahmen, weil sie
 `<@layout.emailLayout>` aus `email/html/template.ftl` importieren – nur die Texte stammen
 dann aus dem Keycloak-Standardbundle. Bei Bedarf einfach eine gleichnamige Datei in
 `email/html/` + `email/text/` anlegen.
+
+### Einladungsmail
+
+Keycloak hat **keine** eigene Willkommensmail und keinen Hook, der beim Anlegen
+eines Users etwas verschickt. Die Einladung läuft über die execute-actions-Mail:
+
+```bash
+kcadm.sh update users/<user-id>/execute-actions-email \
+  -r cvo --body '["UPDATE_PASSWORD","VERIFY_EMAIL"]' \
+  -q lifespan=604800 \
+  -q client_id=account-console \
+  -q redirect_uri=https://iam.cvo-elternrat.de/realms/cvo/account/
+```
+
+In der Konsole: Users → Benutzer → Reiter **Credentials** → **Reset actions** →
+**Send email**. Dort gibt es allerdings kein `lifespan`/`redirect_uri`; es gelten
+der *Default Admin-Initiated Action Lifespan* (Realm settings → Tokens, 12 Stunden)
+und eine Abschlussseite ohne weiterführenden Link.
+
+`executeActions.ftl` verzweigt deshalb über die Aktionen im Action-Token:
+
+| Aktionen im Token | Tonlage |
+|---|---|
+| `UPDATE_PASSWORD` **und** `VERIFY_EMAIL` | Einladung: „Willkommen – für dich wurde ein Zugang eingerichtet" |
+| alles andere | neutral: „für dein Konto sind noch folgende Schritte notwendig" + Liste |
+
+Ein neues Konto braucht praktisch immer beide Aktionen, ein Admin-Reset eines
+bestehenden Kontos nie – deshalb ist das eine verlässliche Unterscheidung. Kommen
+zur Einladung weitere Aktionen hinzu (z. B. `CONFIGURE_TOTP`), wird die Liste
+zusätzlich ausgegeben, damit nichts unter den Tisch fällt.
+
+> **Der Betreff verzweigt nicht mit.** Keycloak löst `executeActionsSubject`
+> parameterlos vor dem Template auf (`send("executeActionsSubject", "executeActions.ftl", …)`),
+> es gibt keinen Zugriff auf die Aktionen. Der Betreff ist deshalb neutral
+> gehalten („Dein Zugang – noch ein Schritt") und muss für beide Fälle passen.
 
 ### Designregeln für die Mail-Templates
 
@@ -319,8 +393,12 @@ schnellste Weg, Layout-, Syntax- und Platzhalterfehler zu finden:
 Das Skript lädt FreeMarker einmalig nach `~/.cache/keycloak-mail-preview/`, rendert
 HTML- **und** Text-Variante je Sprache nach `hack/keycloak-mail-preview/.preview/`
 (gitignored) und baut eine `index.html` mit Umschaltern für Mail, Sprache, Format und
-Desktop-/Mobilbreite. Testdaten (Link, Ablaufzeit, Realm, User, Required Actions) stehen
-in `hack/keycloak-mail-preview/Render.java` → `model(...)`.
+Desktop-/Mobilbreite. Mails und ihre Varianten stehen in
+`hack/keycloak-mail-preview/Render.java` → `MAILS`, die Testdaten (Link, Ablaufzeit,
+Realm, User) in `model(...)`.
+
+`executeActions` wird in vier Varianten gerendert, damit beide Tonlagen sichtbar
+sind: Einladung, Einladung + 2FA, Admin-Passwort-Reset und Profil vervollständigen.
 
 Fehlende Message-Keys erscheinen in der Vorschau als `??keyName??`, statt still
 leer zu bleiben.

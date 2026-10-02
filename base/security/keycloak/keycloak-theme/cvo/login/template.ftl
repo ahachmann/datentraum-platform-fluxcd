@@ -81,7 +81,7 @@
 
                 <!-- Footer -->
                 <div class="kc-footer">
-                    <p>Geschützter Bereich &ndash; nur für autorisierte Nutzer</p>
+                    <p>Geschützter Bereich &ndash; nur für Elternratsmiglieder des CvO</p>
                     <div class="kc-badge">
                         <span class="kc-dot"></span>
                         Gesichert durch Keycloak
