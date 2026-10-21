@@ -1,6 +1,14 @@
 # Number of replicas to be deployed
 replicaCount: 1
 
+image:
+  registry: harbor.hachmann.hamburg/nextcloud
+  repository: nextcloud
+  tag: 33.0.10-php-8.4.27-apache
+  pullPolicy: IfNotPresent
+  # pullSecrets:
+  #   - myRegistrKeySecretName
+
 httpRoute:
   # -- Enable an HTTPRoute resource for nextcloud .
   enabled: false
