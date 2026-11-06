@@ -55,7 +55,8 @@ ingress:
   className: traefik
   annotations: 
     cert-manager.io/cluster-issuer: ${CLUSTER_ISSUER}
-    traefik.ingress.kubernetes.io/router.middlewares: traefik-waf-coraza@kubernetescrd
+    # Enable the WAF middleware for this ingress
+    # traefik.ingress.kubernetes.io/router.middlewares: traefik-waf-coraza@kubernetescrd
   tls:
     - secretName: ${TLS_SECRET_NAME}
       hosts:
