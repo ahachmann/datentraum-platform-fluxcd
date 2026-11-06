@@ -6,6 +6,7 @@ resources:
   - monitoring
   - operators.yaml
   - kubescape
+  - security
   - pg-cluster-01.yaml
   - open-cost.yaml
   - iam.yaml

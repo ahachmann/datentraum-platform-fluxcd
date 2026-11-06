@@ -1,0 +1,26 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: waf-coraza
+  namespace: traefik
+spec:
+  plugin:
+    coraza-http-wasm-traefik:
+      directives:
+        - "SecRuleEngine DetectionOnly"
+        - "SecRequestBodyAccess On"
+        - "SecRequestBodyLimit 8388608"
+        - "SecResponseBodyAccess Off"
+
+        # Health-Checks ausnehmen (sonst Log-Flut durch k8s-Probes)
+        - 'SecRule REQUEST_URI "@rx ^/health(z|check)?$" "id:10001,phase:1,allow,nolog"'
+
+        # SQL Injection
+        - 'SecRule ARGS|ARGS_NAMES|REQUEST_BODY "@rx (?i)(\bunion\b.*\bselect\b|\bdrop\b.*\btable\b)" "id:20001,phase:2,log,deny,status:403,msg:''SQL Injection attempt''"'
+
+        # Cross-Site Scripting
+        - 'SecRule ARGS|ARGS_NAMES|REQUEST_BODY "@rx (?i)(<script[\s>]|javascript\s*:|on\w+\s*=)" "id:20101,phase:2,log,deny,status:403,msg:''XSS - script injection''"'
+
+        # Path Traversal
+        - 'SecRule REQUEST_URI|ARGS "@rx (\.\.\/|\.\.\\\\)" "id:20201,phase:1,log,deny,status:403,msg:''Path traversal attempt''"'
+        
