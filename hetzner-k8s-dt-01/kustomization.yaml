@@ -7,6 +7,7 @@ resources:
   - operators.yaml
   - kubescape
   - security
+  - waf-echo.yaml
   - pg-cluster-01.yaml
   - open-cost.yaml
   - iam.yaml

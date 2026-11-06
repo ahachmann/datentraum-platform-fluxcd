@@ -1,0 +1,55 @@
+# Zwei Ingresses auf dasselbe Backend:
+#   ${DOMAIN}       -> mit WAF-Middleware
+#   raw-${DOMAIN}   -> ohne WAF, als Vergleich (liegt es an der WAF oder nicht?)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: waf-echo
+  annotations:
+    cert-manager.io/cluster-issuer: ${CLUSTER_ISSUER}
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.middlewares: traefik-waf-coraza@kubernetescrd
+spec:
+  ingressClassName: ${INGRESS}
+  tls:
+    - hosts:
+        - ${DOMAIN}
+      secretName: waf-echo-tls
+  rules:
+    - host: ${DOMAIN}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: waf-echo
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: waf-echo-raw
+  annotations:
+    cert-manager.io/cluster-issuer: ${CLUSTER_ISSUER}
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  ingressClassName: ${INGRESS}
+  tls:
+    - hosts:
+        - raw-${DOMAIN}
+      secretName: waf-echo-raw-tls
+  rules:
+    - host: raw-${DOMAIN}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: waf-echo
+                port:
+                  number: 80
